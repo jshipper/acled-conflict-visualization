@@ -1,6 +1,7 @@
 package com.jshipper.acled;
 
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -13,33 +14,61 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.UniqueConstraint;
 
+/**
+ * POJO representing the ACLED dataset, without the first 2 columns (GWNO,
+ * EVENT_ID_CNTY)
+ * 
+ * @author jshipper
+ *
+ */
 @Entity
 @NamedQueries({
-  @NamedQuery(name = "getConflictsByDate",
+  @NamedQuery(name = Conflict.ALL_QUERY,
+    query = "FROM " + Conflict.TABLE_NAME + " c "),
+  @NamedQuery(name = Conflict.BY_DATE_QUERY,
     query = "FROM " + Conflict.TABLE_NAME + " c WHERE c.date = :date"),
-  @NamedQuery(name = "getConflictsInDateRange",
+  @NamedQuery(name = Conflict.IN_DATE_RANGE_QUERY,
     query = "FROM " + Conflict.TABLE_NAME
       + " c WHERE c.date >= :startDate AND c.date <= :endDate"),
-  @NamedQuery(name = "getConflictsByCountry",
-    query = "FROM " + Conflict.TABLE_NAME + " c WHERE c.country = :country"),
-  @NamedQuery(name = "getConflictsByActor",
+  @NamedQuery(name = Conflict.BY_COUNTRY_QUERY,
     query = "FROM " + Conflict.TABLE_NAME
-      + " c WHERE c.actor1 = :actor OR c.actor2 = :actor"),
-  @NamedQuery(name = "getConflictsByActors",
+      + " c WHERE lower(c.country) = lower(:country)"),
+  @NamedQuery(name = Conflict.BY_ACTOR_QUERY,
     query = "FROM " + Conflict.TABLE_NAME
-      + " c WHERE (c.actor1 = :actor1 OR c.actor1 = :actor2)"
-      + " AND (c.actor2 = :actor1 OR c.actor2 = :actor2)"),
-  @NamedQuery(name = "getConflictsByFatalities",
+      + " c WHERE lower(c.actor1) = lower(:actor) OR lower(c.actor2) = lower(:actor)"),
+  @NamedQuery(name = Conflict.BY_ACTORS_QUERY,
+    query = "FROM " + Conflict.TABLE_NAME
+      + " c WHERE (lower(c.actor1) = lower(:actor1) OR lower(c.actor1) = lower(:actor2))"
+      + " AND (lower(c.actor2) = lower(:actor1) OR lower(c.actor2) = lower(:actor2))"),
+  @NamedQuery(name = Conflict.BY_FATALITIES_QUERY,
     query = "FROM " + Conflict.TABLE_NAME
       + " c WHERE c.fatalities = :fatalities"),
-  @NamedQuery(name = "getConflictsInFatalityRange",
+  @NamedQuery(name = Conflict.IN_FATALITY_RANGE_QUERY,
     query = "FROM " + Conflict.TABLE_NAME
-      + " c WHERE c.fatalities >= :lowEnd AND c.fatalities <= :highEnd") })
+      + " c WHERE c.fatalities >= :lowEnd AND c.fatalities <= :highEnd"),
+  @NamedQuery(name = Conflict.ALL_COUNTRIES_QUERY,
+    query = "SELECT DISTINCT c.country FROM " + Conflict.TABLE_NAME + " c"),
+  @NamedQuery(name = Conflict.ALL_ACTOR1S_QUERY,
+    query = "SELECT DISTINCT c.actor1 FROM " + Conflict.TABLE_NAME + " c"),
+  @NamedQuery(name = Conflict.ALL_ACTOR2S_QUERY,
+    query = "SELECT DISTINCT c.actor2 FROM " + Conflict.TABLE_NAME + " c") })
 @Table(name = Conflict.TABLE_NAME,
   uniqueConstraints = @UniqueConstraint(columnNames = { "EVENT_ID_NO_CNTY" }) )
 public class Conflict implements Serializable {
   public static final String TABLE_NAME = "Conflict";
-  private static final long serialVersionUID = 4579553404626443076L;
+  public static final String ALL_QUERY = "getAllConflicts";
+  public static final String BY_DATE_QUERY = "getConflictsByDate";
+  public static final String IN_DATE_RANGE_QUERY = "getConflictsInDateRange";
+  public static final String BY_COUNTRY_QUERY = "getConflictsByCountry";
+  public static final String BY_ACTOR_QUERY = "getConflictsByActor";
+  public static final String BY_ACTORS_QUERY = "getConflictsByActors";
+  public static final String BY_FATALITIES_QUERY = "getConflictsByFatalities";
+  public static final String IN_FATALITY_RANGE_QUERY =
+    "getConflictsInFatalityRange";
+  public static final String ALL_COUNTRIES_QUERY = "getAllCountries";
+  public static final String ALL_ACTOR1S_QUERY = "getAllActor1s";
+  public static final String ALL_ACTOR2S_QUERY = "getAllActor2s";
+  private static final long serialVersionUID = -752272337227549569L;
 
   @Id
   @Column(name = "EVENT_ID_NO_CNTY")
@@ -421,8 +450,18 @@ public class Conflict implements Serializable {
     if (date == null) {
       if (other.date != null)
         return false;
-    } else if (!date.equals(other.date))
-      return false;
+    } else {
+      // Compare dates, equal if same day of year and same year
+      Calendar c = Calendar.getInstance();
+      c.setTime(date);
+      int dateDay = c.get(Calendar.DAY_OF_YEAR);
+      int dateYear = c.get(Calendar.YEAR);
+      c.setTime(other.date);
+      int otherDateDay = c.get(Calendar.DAY_OF_YEAR);
+      int otherDateYear = c.get(Calendar.YEAR);
+      if (dateDay != otherDateDay || dateYear != otherDateYear)
+        return false;
+    }
     if (eventType == null) {
       if (other.eventType != null)
         return false;
