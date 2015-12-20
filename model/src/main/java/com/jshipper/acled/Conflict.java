@@ -1,4 +1,4 @@
-package com.jshipper;
+package com.jshipper.acled;
 
 import java.io.Serializable;
 import java.util.Date;
