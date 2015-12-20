@@ -9,5 +9,26 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
   </parent>
   <artifactId>acled-data-visualization-dao</artifactId>
   <packaging>jar</packaging>
-  <properties></properties>
+  <dependencies>
+    <!-- Modules -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>acled-data-visualization-model</artifactId>
+    </dependency>
+    <!-- Hibernate -->
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-core</artifactId>
+    </dependency>
+    <!-- Testing -->
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+  </dependencies>
 </project>
