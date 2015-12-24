@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Properties;
 
@@ -28,8 +29,7 @@ public class ConflictDaoImplTest {
 
   static {
     // Create some test records
-    Calendar c = Calendar.getInstance();
-    c.set(2015, 0, 1, 0, 0, 0);
+    Calendar c = new GregorianCalendar(2015, 0, 1);
     conflicts = new ArrayList<>();
     for (int i = 0; i < NUM_RECORDS; i++) {
       Conflict conflict = new Conflict();
@@ -102,13 +102,12 @@ public class ConflictDaoImplTest {
 
   @Test
   public void testGetConflictsByDate() {
-    Calendar c = Calendar.getInstance();
-    c.set(2015, 0, 1, 0, 0, 0);
+    Calendar c = new GregorianCalendar(2015, 0, 1);
     Transaction tx = sessionFactory.getCurrentSession().beginTransaction();
     List<Conflict> retrievedConflicts = dao.getConflictsByDate(c.getTime());
     tx.commit();
     for (Conflict conflict : retrievedConflicts) {
-      Calendar conflictCal = Calendar.getInstance();
+      Calendar conflictCal = new GregorianCalendar();
       conflictCal.setTime(conflict.getDate());
       assertEquals(c.get(Calendar.DAY_OF_YEAR),
         conflictCal.get(Calendar.DAY_OF_YEAR));
@@ -118,11 +117,9 @@ public class ConflictDaoImplTest {
 
   @Test
   public void testGetConflictsInDateRange() {
-    Calendar startDateCal = Calendar.getInstance();
-    startDateCal.set(2015, 0, 1, 0, 0, 0);
+    Calendar startDateCal = new GregorianCalendar(2015, 0, 1);
     // NOTE: This end date may not be valid if NUM_RECORDS is changed
-    Calendar endDateCal = Calendar.getInstance();
-    endDateCal.set(2015, 0, 5, 0, 0, 0);
+    Calendar endDateCal = new GregorianCalendar(2015, 0, 5);
     Transaction tx = sessionFactory.getCurrentSession().beginTransaction();
     List<Conflict> retrievedConflicts =
       dao.getConflictsInDateRange(startDateCal.getTime(), endDateCal.getTime());
@@ -132,7 +129,7 @@ public class ConflictDaoImplTest {
         - startDateCal.get(Calendar.DAY_OF_YEAR) + 1,
       retrievedConflicts.size());
     for (Conflict conflict : retrievedConflicts) {
-      Calendar conflictCal = Calendar.getInstance();
+      Calendar conflictCal = new GregorianCalendar();
       conflictCal.setTime(conflict.getDate());
       assertTrue(
         conflictCal.get(Calendar.YEAR) >= startDateCal.get(Calendar.YEAR)
@@ -215,6 +212,21 @@ public class ConflictDaoImplTest {
           || "ActOR 1".equalsIgnoreCase(conflict.getActor2())));
     }
     assertEquals(retrievedConflicts, retrievedConflicts2);
+    tx = sessionFactory.getCurrentSession().beginTransaction();
+    List<Conflict> retrievedConflicts3 =
+      dao.getConflictsByActors("ActOR 1", "acTor 0");
+    tx.commit();
+    // NOTE: This expected size could change if NUM_RECORDS or moduli are
+    // changed
+    assertEquals(1, retrievedConflicts3.size());
+    for (Conflict conflict : retrievedConflicts3) {
+      assertTrue(("acTor 0".equalsIgnoreCase(conflict.getActor1())
+        || "acTor 0".equalsIgnoreCase(conflict.getActor2()))
+        && ("ActOR 1".equalsIgnoreCase(conflict.getActor1())
+          || "ActOR 1".equalsIgnoreCase(conflict.getActor2())));
+    }
+    assertEquals(retrievedConflicts, retrievedConflicts3);
+    assertEquals(retrievedConflicts2, retrievedConflicts3);
   }
 
   @Test

@@ -2,6 +2,7 @@ package com.jshipper.acled;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.hibernate.Session;
@@ -15,34 +16,29 @@ public class TestDataConfig {
   public static final int ACTOR1_MODULUS = 5;
   public static final int ACTOR2_MODULUS = 13;
   public static List<Conflict> CONFLICTS;
-  private static boolean isTestDataCreated = false;
 
   @Bean
   public boolean createTestData(SessionFactory sessionFactory) {
-    if (!isTestDataCreated) {
-      CONFLICTS = new ArrayList<>();
-      Session session = sessionFactory.openSession();
-      session.getTransaction().begin();
-      // Create some test records
-      Calendar c = Calendar.getInstance();
-      c.set(2015, 0, 1, 0, 0, 0);
-      for (int i = 0; i < NUM_RECORDS; i++) {
-        Conflict conflict = new Conflict();
-        conflict.setId(new Long(i));
-        conflict.setCountry("Country " + i);
-        conflict.setActor1("Actor " + (i % ACTOR1_MODULUS));
-        conflict.setActor2("Actor " + ((i + 1) % ACTOR2_MODULUS));
-        conflict.setDate(c.getTime());
-        c.add(Calendar.DAY_OF_YEAR, 1);
-        conflict.setFatalities(i);
-        CONFLICTS.add(conflict);
-        session.persist(conflict);
-      }
-      session.flush();
-      session.getTransaction().commit();
-      session.close();
-      isTestDataCreated = true;
+    CONFLICTS = new ArrayList<>();
+    Session session = sessionFactory.openSession();
+    session.getTransaction().begin();
+    // Create some test records
+    Calendar c = new GregorianCalendar(2015, 0, 1);
+    for (int i = 0; i < NUM_RECORDS; i++) {
+      Conflict conflict = new Conflict();
+      conflict.setId(new Long(i));
+      conflict.setCountry("Country " + i);
+      conflict.setActor1("Actor " + (i % ACTOR1_MODULUS));
+      conflict.setActor2("Actor " + ((i + 1) % ACTOR2_MODULUS));
+      conflict.setDate(c.getTime());
+      c.add(Calendar.DAY_OF_YEAR, 1);
+      conflict.setFatalities(i);
+      CONFLICTS.add(conflict);
+      session.persist(conflict);
     }
+    session.flush();
+    session.getTransaction().commit();
+    session.close();
     return true;
   }
 }

@@ -16,6 +16,12 @@ import org.springframework.orm.hibernate4.LocalSessionFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+/**
+ * Configures transaction management and needed beans for ConflictService
+ * 
+ * @author jshipper
+ *
+ */
 @Configuration
 @EnableTransactionManagement
 public class ConflictDaoConfig {

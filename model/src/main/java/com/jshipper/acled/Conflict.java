@@ -3,6 +3,7 @@ package com.jshipper.acled;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -68,6 +69,7 @@ public class Conflict implements Serializable {
   public static final String ALL_COUNTRIES_QUERY = "getAllCountries";
   public static final String ALL_ACTOR1S_QUERY = "getAllActor1s";
   public static final String ALL_ACTOR2S_QUERY = "getAllActor2s";
+  public static final String DATE_FORMAT = "yyyy-MM-dd";
   private static final long serialVersionUID = -752272337227549569L;
 
   @Id
@@ -452,7 +454,7 @@ public class Conflict implements Serializable {
         return false;
     } else {
       // Compare dates, equal if same day of year and same year
-      Calendar c = Calendar.getInstance();
+      Calendar c = new GregorianCalendar();
       c.setTime(date);
       int dateDay = c.get(Calendar.DAY_OF_YEAR);
       int dateYear = c.get(Calendar.YEAR);
