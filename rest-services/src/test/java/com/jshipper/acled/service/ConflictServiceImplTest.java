@@ -1,5 +1,11 @@
 package com.jshipper.acled.service;
 
+import static com.jshipper.acled.config.TestDataConfig.ACTOR1_MODULUS;
+import static com.jshipper.acled.config.TestDataConfig.ACTOR2_MODULUS;
+import static com.jshipper.acled.config.TestDataConfig.CONFLICTS;
+import static com.jshipper.acled.config.TestDataConfig.NUM_RECORDS;
+import static com.jshipper.acled.config.TestDataConfig.finalDate;
+import static com.jshipper.acled.config.TestDataConfig.initialDate;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -18,7 +24,6 @@ import org.springframework.core.io.support.ResourcePropertySource;
 import com.jshipper.acled.config.ConflictServiceConfig;
 import com.jshipper.acled.config.TestDataConfig;
 import com.jshipper.acled.model.Conflict;
-import com.jshipper.acled.service.ConflictService;
 
 public class ConflictServiceImplTest {
   private static AnnotationConfigApplicationContext context;
@@ -43,31 +48,31 @@ public class ConflictServiceImplTest {
   public void testGetAllConflicts() {
     ConflictService conflictService = context.getBean(ConflictService.class);
     List<Conflict> retrievedConflicts = conflictService.getAllConflicts();
-    assertEquals(TestDataConfig.NUM_RECORDS, retrievedConflicts.size());
-    assertEquals(TestDataConfig.CONFLICTS, retrievedConflicts);
+    assertEquals(NUM_RECORDS, retrievedConflicts.size());
+    assertEquals(CONFLICTS, retrievedConflicts);
   }
 
   @Test
   public void testGetConflictsByDate() {
     ConflictService conflictService = context.getBean(ConflictService.class);
-    Calendar c = new GregorianCalendar(2015, 0, 1);
     List<Conflict> retrievedConflicts =
-      conflictService.getConflictsByDate(c.getTime());
+      conflictService.getConflictsByDate(initialDate.getTime());
     for (Conflict conflict : retrievedConflicts) {
       Calendar conflictCal = new GregorianCalendar();
       conflictCal.setTime(conflict.getDate());
-      assertEquals(c.get(Calendar.DAY_OF_YEAR),
+      assertEquals(initialDate.get(Calendar.DAY_OF_YEAR),
         conflictCal.get(Calendar.DAY_OF_YEAR));
-      assertEquals(c.get(Calendar.YEAR), conflictCal.get(Calendar.YEAR));
+      assertEquals(initialDate.get(Calendar.YEAR),
+        conflictCal.get(Calendar.YEAR));
     }
   }
 
   @Test
   public void testGetConflictsInDateRange() {
     ConflictService conflictService = context.getBean(ConflictService.class);
-    Calendar startDateCal = new GregorianCalendar(2015, 0, 1);
-    // NOTE: This end date may not be valid if NUM_RECORDS is changed
-    Calendar endDateCal = new GregorianCalendar(2015, 0, 5);
+    // NOTE: These dates may not be valid if NUM_RECORDS is changed
+    Calendar startDateCal = new GregorianCalendar(2015, 0, 6);
+    Calendar endDateCal = new GregorianCalendar(2015, 0, 10);
     List<Conflict> retrievedConflicts = conflictService
       .getConflictsInDateRange(startDateCal.getTime(), endDateCal.getTime());
     assertEquals(
@@ -85,6 +90,25 @@ public class ConflictServiceImplTest {
         && conflictCal.get(Calendar.DAY_OF_YEAR) <= endDateCal
           .get(Calendar.DAY_OF_YEAR));
     }
+    // Test with start date null
+    retrievedConflicts =
+      conflictService.getConflictsInDateRange(null, endDateCal.getTime());
+    assertEquals(endDateCal.get(Calendar.DAY_OF_YEAR)
+      - initialDate.get(Calendar.DAY_OF_YEAR) + 1, retrievedConflicts.size());
+    // Test with end date null
+    retrievedConflicts =
+      conflictService.getConflictsInDateRange(startDateCal.getTime(), null);
+    assertEquals(
+      finalDate.get(Calendar.DAY_OF_YEAR)
+        - startDateCal.get(Calendar.DAY_OF_YEAR) + 1,
+      retrievedConflicts.size());
+    // Test with both null
+    retrievedConflicts = conflictService.getConflictsInDateRange(null, null);
+    assertEquals(0, retrievedConflicts.size());
+    // Test with end date before start date
+    retrievedConflicts = conflictService
+      .getConflictsInDateRange(endDateCal.getTime(), startDateCal.getTime());
+    assertEquals(0, retrievedConflicts.size());
   }
 
   @Test
@@ -110,20 +134,16 @@ public class ConflictServiceImplTest {
     ConflictService conflictService = context.getBean(ConflictService.class);
     List<Conflict> retrievedConflicts =
       conflictService.getConflictsByActor("Actor 0");
-    assertEquals(
-      (int) TestDataConfig.NUM_RECORDS / TestDataConfig.ACTOR1_MODULUS
-        + (int) TestDataConfig.NUM_RECORDS / TestDataConfig.ACTOR2_MODULUS + 1,
-      retrievedConflicts.size());
+    assertEquals((int) NUM_RECORDS / ACTOR1_MODULUS
+      + (int) NUM_RECORDS / ACTOR2_MODULUS + 1, retrievedConflicts.size());
     for (Conflict conflict : retrievedConflicts) {
       assertTrue("Actor 0".equalsIgnoreCase(conflict.getActor1())
         || "Actor 0".equalsIgnoreCase(conflict.getActor2()));
     }
     List<Conflict> retrievedConflicts2 =
       conflictService.getConflictsByActor("acTor 0");
-    assertEquals(
-      (int) TestDataConfig.NUM_RECORDS / TestDataConfig.ACTOR1_MODULUS
-        + (int) TestDataConfig.NUM_RECORDS / TestDataConfig.ACTOR2_MODULUS + 1,
-      retrievedConflicts2.size());
+    assertEquals((int) NUM_RECORDS / ACTOR1_MODULUS
+      + (int) NUM_RECORDS / ACTOR2_MODULUS + 1, retrievedConflicts2.size());
     for (Conflict conflict : retrievedConflicts2) {
       assertTrue("acTor 0".equalsIgnoreCase(conflict.getActor1())
         || "acTor 0".equalsIgnoreCase(conflict.getActor2()));
@@ -186,21 +206,41 @@ public class ConflictServiceImplTest {
   @Test
   public void testGetConflictsInFatalityRange() {
     ConflictService conflictService = context.getBean(ConflictService.class);
-    // NOTE: This test will break if NUM_RECORDS set to less than 2
-    List<Conflict> retrievedConflicts = conflictService
-      .getConflictsInFatalityRange(0, TestDataConfig.NUM_RECORDS - 2);
-    assertEquals(TestDataConfig.NUM_RECORDS - 1, retrievedConflicts.size());
+    // NOTE: This test will break if NUM_RECORDS set to less than 3
+    List<Conflict> retrievedConflicts =
+      conflictService.getConflictsInFatalityRange(1, NUM_RECORDS - 2);
+    assertEquals(NUM_RECORDS - 2, retrievedConflicts.size());
     for (Conflict conflict : retrievedConflicts) {
-      assertTrue(conflict.getFatalities() >= 0
-        && conflict.getFatalities() <= TestDataConfig.NUM_RECORDS - 2);
+      assertTrue(conflict.getFatalities() >= 1
+        && conflict.getFatalities() <= NUM_RECORDS - 2);
     }
+    // Test with low end null
+    retrievedConflicts =
+      conflictService.getConflictsInFatalityRange(null, NUM_RECORDS - 1);
+    assertEquals(NUM_RECORDS, retrievedConflicts.size());
+    for (Conflict conflict : retrievedConflicts) {
+      assertTrue(conflict.getFatalities() <= NUM_RECORDS - 1);
+    }
+    // Test with high end null
+    retrievedConflicts = conflictService.getConflictsInFatalityRange(1, null);
+    assertEquals(NUM_RECORDS - 1, retrievedConflicts.size());
+    for (Conflict conflict : retrievedConflicts) {
+      assertTrue(conflict.getFatalities() >= 1);
+    }
+    // Test with both null
+    retrievedConflicts =
+      conflictService.getConflictsInFatalityRange(null, null);
+    assertEquals(0, retrievedConflicts.size());
+    // Test with high end before low end
+    retrievedConflicts = conflictService.getConflictsInFatalityRange(2, 1);
+    assertEquals(0, retrievedConflicts.size());
   }
 
   @Test
   public void testGetAllCountries() {
     ConflictService conflictService = context.getBean(ConflictService.class);
     List<String> retrievedCountries = conflictService.getAllCountries();
-    assertEquals(TestDataConfig.NUM_RECORDS, retrievedCountries.size());
+    assertEquals(NUM_RECORDS, retrievedCountries.size());
     for (int i = 0; i < retrievedCountries.size(); i++) {
       assertEquals("Country " + i, retrievedCountries.get(i));
     }
@@ -212,10 +252,10 @@ public class ConflictServiceImplTest {
     ConflictService conflictService = context.getBean(ConflictService.class);
     List<String> retrievedActors = conflictService.getAllActors();
     int numRecords;
-    if (TestDataConfig.ACTOR1_MODULUS > TestDataConfig.ACTOR2_MODULUS) {
-      numRecords = TestDataConfig.ACTOR1_MODULUS;
+    if (ACTOR1_MODULUS > ACTOR2_MODULUS) {
+      numRecords = ACTOR1_MODULUS;
     } else {
-      numRecords = TestDataConfig.ACTOR2_MODULUS;
+      numRecords = ACTOR2_MODULUS;
     }
     assertEquals(numRecords, retrievedActors.size());
     for (int i = 0; i < retrievedActors.size(); i++) {

@@ -28,11 +28,15 @@ public class ConflictDaoImplTest {
   private static SessionFactory sessionFactory;
   private final ConflictDaoImpl dao = new ConflictDaoImpl(sessionFactory);
   private static final List<Conflict> conflicts;
+  private static final Calendar initialDate = new GregorianCalendar(2015, 0, 1);
+  private static final Calendar finalDate =
+    new GregorianCalendar(2015, 0, NUM_RECORDS);
   private static boolean isTestDataCreated = false;
 
   static {
     // Create some test records
-    Calendar c = new GregorianCalendar(2015, 0, 1);
+    Calendar c = new GregorianCalendar();
+    c.setTime(initialDate.getTime());
     conflicts = new ArrayList<>();
     for (int i = 0; i < NUM_RECORDS; i++) {
       Conflict conflict = new Conflict();
@@ -105,24 +109,25 @@ public class ConflictDaoImplTest {
 
   @Test
   public void testGetConflictsByDate() {
-    Calendar c = new GregorianCalendar(2015, 0, 1);
     Transaction tx = sessionFactory.getCurrentSession().beginTransaction();
-    List<Conflict> retrievedConflicts = dao.getConflictsByDate(c.getTime());
+    List<Conflict> retrievedConflicts =
+      dao.getConflictsByDate(initialDate.getTime());
     tx.commit();
     for (Conflict conflict : retrievedConflicts) {
       Calendar conflictCal = new GregorianCalendar();
       conflictCal.setTime(conflict.getDate());
-      assertEquals(c.get(Calendar.DAY_OF_YEAR),
+      assertEquals(initialDate.get(Calendar.DAY_OF_YEAR),
         conflictCal.get(Calendar.DAY_OF_YEAR));
-      assertEquals(c.get(Calendar.YEAR), conflictCal.get(Calendar.YEAR));
+      assertEquals(initialDate.get(Calendar.YEAR),
+        conflictCal.get(Calendar.YEAR));
     }
   }
 
   @Test
   public void testGetConflictsInDateRange() {
-    Calendar startDateCal = new GregorianCalendar(2015, 0, 1);
-    // NOTE: This end date may not be valid if NUM_RECORDS is changed
-    Calendar endDateCal = new GregorianCalendar(2015, 0, 5);
+    // NOTE: These dates may not be valid if NUM_RECORDS is changed
+    Calendar startDateCal = new GregorianCalendar(2015, 0, 6);
+    Calendar endDateCal = new GregorianCalendar(2015, 0, 10);
     Transaction tx = sessionFactory.getCurrentSession().beginTransaction();
     List<Conflict> retrievedConflicts =
       dao.getConflictsInDateRange(startDateCal.getTime(), endDateCal.getTime());
@@ -142,6 +147,33 @@ public class ConflictDaoImplTest {
         && conflictCal.get(Calendar.DAY_OF_YEAR) <= endDateCal
           .get(Calendar.DAY_OF_YEAR));
     }
+    // Test with start date null
+    tx = sessionFactory.getCurrentSession().beginTransaction();
+    retrievedConflicts =
+      dao.getConflictsInDateRange(null, endDateCal.getTime());
+    tx.commit();
+    assertEquals(endDateCal.get(Calendar.DAY_OF_YEAR)
+      - initialDate.get(Calendar.DAY_OF_YEAR) + 1, retrievedConflicts.size());
+    // Test with end date null
+    tx = sessionFactory.getCurrentSession().beginTransaction();
+    retrievedConflicts =
+      dao.getConflictsInDateRange(startDateCal.getTime(), null);
+    tx.commit();
+    assertEquals(
+      finalDate.get(Calendar.DAY_OF_YEAR)
+        - startDateCal.get(Calendar.DAY_OF_YEAR) + 1,
+      retrievedConflicts.size());
+    // Test with both null
+    tx = sessionFactory.getCurrentSession().beginTransaction();
+    retrievedConflicts = dao.getConflictsInDateRange(null, null);
+    tx.commit();
+    assertEquals(0, retrievedConflicts.size());
+    // Test with end date before start date
+    tx = sessionFactory.getCurrentSession().beginTransaction();
+    retrievedConflicts =
+      dao.getConflictsInDateRange(endDateCal.getTime(), startDateCal.getTime());
+    tx.commit();
+    assertEquals(0, retrievedConflicts.size());
   }
 
   @Test
@@ -246,15 +278,41 @@ public class ConflictDaoImplTest {
   @Test
   public void testGetConflictsInFatalityRange() {
     Transaction tx = sessionFactory.getCurrentSession().beginTransaction();
-    // NOTE: This test will break if NUM_RECORDS set to less than 2
+    // NOTE: This test will break if NUM_RECORDS set to less than 3
     List<Conflict> retrievedConflicts =
-      dao.getConflictsInFatalityRange(0, NUM_RECORDS - 2);
+      dao.getConflictsInFatalityRange(1, NUM_RECORDS - 2);
+    tx.commit();
+    assertEquals(NUM_RECORDS - 2, retrievedConflicts.size());
+    for (Conflict conflict : retrievedConflicts) {
+      assertTrue(conflict.getFatalities() >= 1
+        && conflict.getFatalities() <= NUM_RECORDS - 2);
+    }
+    // Test with low end null
+    tx = sessionFactory.getCurrentSession().beginTransaction();
+    retrievedConflicts = dao.getConflictsInFatalityRange(null, NUM_RECORDS - 1);
+    tx.commit();
+    assertEquals(NUM_RECORDS, retrievedConflicts.size());
+    for (Conflict conflict : retrievedConflicts) {
+      assertTrue(conflict.getFatalities() <= NUM_RECORDS - 1);
+    }
+    // Test with high end null
+    tx = sessionFactory.getCurrentSession().beginTransaction();
+    retrievedConflicts = dao.getConflictsInFatalityRange(1, null);
     tx.commit();
     assertEquals(NUM_RECORDS - 1, retrievedConflicts.size());
     for (Conflict conflict : retrievedConflicts) {
-      assertTrue(conflict.getFatalities() >= 0
-        && conflict.getFatalities() <= NUM_RECORDS - 2);
+      assertTrue(conflict.getFatalities() >= 1);
     }
+    // Test with both null
+    tx = sessionFactory.getCurrentSession().beginTransaction();
+    retrievedConflicts = dao.getConflictsInFatalityRange(null, null);
+    tx.commit();
+    assertEquals(0, retrievedConflicts.size());
+    // Test with high end before low end
+    tx = sessionFactory.getCurrentSession().beginTransaction();
+    retrievedConflicts = dao.getConflictsInFatalityRange(2, 1);
+    tx.commit();
+    assertEquals(0, retrievedConflicts.size());
   }
 
   @Test

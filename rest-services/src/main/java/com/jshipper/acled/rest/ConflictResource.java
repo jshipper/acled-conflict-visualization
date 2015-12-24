@@ -72,20 +72,28 @@ public class ConflictResource {
     @QueryParam("endDate") String endDate) {
     DateFormat dateFormat = new SimpleDateFormat(Conflict.DATE_FORMAT);
     Date d1 = null;
-    try {
-      d1 = dateFormat.parse(startDate);
-    } catch (ParseException e) {
-      return Response.status(Status.BAD_REQUEST)
-        .entity("Start date not in expected format: " + Conflict.DATE_FORMAT)
-        .build();
+    if (startDate != null) {
+      try {
+        d1 = dateFormat.parse(startDate);
+      } catch (ParseException e) {
+        return Response.status(Status.BAD_REQUEST)
+          .entity("Start date not in expected format: " + Conflict.DATE_FORMAT)
+          .build();
+      }
     }
     Date d2 = null;
-    try {
-      d2 = dateFormat.parse(endDate);
-    } catch (ParseException e) {
-      return Response.status(Status.BAD_REQUEST)
-        .entity("End date not in expected format: " + Conflict.DATE_FORMAT)
-        .build();
+    if (endDate != null) {
+      try {
+        d2 = dateFormat.parse(endDate);
+      } catch (ParseException e) {
+        return Response.status(Status.BAD_REQUEST)
+          .entity("End date not in expected format: " + Conflict.DATE_FORMAT)
+          .build();
+      }
+      if (d1 != null && d2 != null && d2.before(d1)) {
+        return Response.status(Status.BAD_REQUEST)
+          .entity("End date should be after start date").build();
+      }
     }
     return Response.ok(conflictService.getConflictsInDateRange(d1, d2)).build();
   }
@@ -133,6 +141,10 @@ public class ConflictResource {
   public Response getConflictsInFatalityRange(
     @QueryParam("lowEnd") Integer lowEnd,
     @QueryParam("highEnd") Integer highEnd) {
+    if (lowEnd != null && highEnd != null && lowEnd > highEnd) {
+      return Response.status(Status.BAD_REQUEST)
+        .entity("High end should be greater than low end").build();
+    }
     return Response
       .ok(conflictService.getConflictsInFatalityRange(lowEnd, highEnd)).build();
   }

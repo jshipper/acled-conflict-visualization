@@ -30,7 +30,8 @@ import javax.persistence.UniqueConstraint;
     query = "FROM " + Conflict.TABLE_NAME + " c WHERE c.date = :date"),
   @NamedQuery(name = Conflict.IN_DATE_RANGE_QUERY,
     query = "FROM " + Conflict.TABLE_NAME
-      + " c WHERE c.date >= :startDate AND c.date <= :endDate"),
+      + " c WHERE (:startDate IS NULL OR c.date >= :startDate) "
+      + "AND (:endDate IS NULL OR c.date <= :endDate) "),
   @NamedQuery(name = Conflict.BY_COUNTRY_QUERY,
     query = "FROM " + Conflict.TABLE_NAME
       + " c WHERE lower(c.country) = lower(:country)"),
@@ -46,7 +47,8 @@ import javax.persistence.UniqueConstraint;
       + " c WHERE c.fatalities = :fatalities"),
   @NamedQuery(name = Conflict.IN_FATALITY_RANGE_QUERY,
     query = "FROM " + Conflict.TABLE_NAME
-      + " c WHERE c.fatalities >= :lowEnd AND c.fatalities <= :highEnd"),
+      + " c WHERE (:lowEnd IS NULL OR c.fatalities >= :lowEnd) "
+      + "AND (:highEnd IS NULL OR c.fatalities <= :highEnd)"),
   @NamedQuery(name = Conflict.ALL_COUNTRIES_QUERY,
     query = "SELECT DISTINCT c.country FROM " + Conflict.TABLE_NAME + " c"),
   @NamedQuery(name = Conflict.ALL_ACTOR1S_QUERY,

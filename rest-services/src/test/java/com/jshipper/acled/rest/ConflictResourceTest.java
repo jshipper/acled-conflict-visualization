@@ -1,5 +1,11 @@
 package com.jshipper.acled.rest;
 
+import static com.jshipper.acled.config.TestDataConfig.ACTOR1_MODULUS;
+import static com.jshipper.acled.config.TestDataConfig.ACTOR2_MODULUS;
+import static com.jshipper.acled.config.TestDataConfig.CONFLICTS;
+import static com.jshipper.acled.config.TestDataConfig.NUM_RECORDS;
+import static com.jshipper.acled.config.TestDataConfig.finalDate;
+import static com.jshipper.acled.config.TestDataConfig.initialDate;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -26,11 +32,10 @@ import org.springframework.core.io.support.ResourcePropertySource;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jshipper.acled.config.ConflictServiceConfig;
 import com.jshipper.acled.config.ConflictResourceConfig;
+import com.jshipper.acled.config.ConflictServiceConfig;
 import com.jshipper.acled.config.TestDataConfig;
 import com.jshipper.acled.model.Conflict;
-import com.jshipper.acled.rest.ConflictResource;
 
 public class ConflictResourceTest extends JerseyTest {
   private ObjectMapper mapper;
@@ -63,28 +68,28 @@ public class ConflictResourceTest extends JerseyTest {
     List<Conflict> retrievedConflicts =
       mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
       });
-    assertEquals(TestDataConfig.NUM_RECORDS, retrievedConflicts.size());
-    assertEquals(TestDataConfig.CONFLICTS, retrievedConflicts);
+    assertEquals(NUM_RECORDS, retrievedConflicts.size());
+    assertEquals(CONFLICTS, retrievedConflicts);
   }
 
   @Test
   public void testGetConflictsByDate() throws IOException {
-    Calendar c = new GregorianCalendar(2015, 0, 1);
     DateFormat dateFormat = new SimpleDateFormat(Conflict.DATE_FORMAT);
-    JsonNode jsonResponse =
-      target(ConflictResource.PATH + "/getConflictsByDate/"
-        + dateFormat.format(c.getTime())).request().get(JsonNode.class);
+    JsonNode jsonResponse = target(ConflictResource.PATH
+      + "/getConflictsByDate/" + dateFormat.format(initialDate.getTime()))
+        .request().get(JsonNode.class);
     List<Conflict> retrievedConflicts =
       mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
       });
     for (Conflict conflict : retrievedConflicts) {
       Calendar conflictCal = new GregorianCalendar();
       conflictCal.setTime(conflict.getDate());
-      assertEquals(c.get(Calendar.DAY_OF_YEAR),
+      assertEquals(initialDate.get(Calendar.DAY_OF_YEAR),
         conflictCal.get(Calendar.DAY_OF_YEAR));
-      assertEquals(c.get(Calendar.YEAR), conflictCal.get(Calendar.YEAR));
+      assertEquals(initialDate.get(Calendar.YEAR),
+        conflictCal.get(Calendar.YEAR));
     }
-    // Test for BAD_REQUEST response
+    // Test for BAD_REQUEST response (invalid date format)
     Response response =
       target(ConflictResource.PATH + "/getConflictsByDate/20150101").request()
         .get(Response.class);
@@ -97,9 +102,9 @@ public class ConflictResourceTest extends JerseyTest {
 
   @Test
   public void testGetConflictsInDateRange() throws IOException {
-    Calendar startDateCal = new GregorianCalendar(2015, 0, 1);
-    // NOTE: This end date may not be valid if NUM_RECORDS is changed
-    Calendar endDateCal = new GregorianCalendar(2015, 0, 5);
+    // NOTE: These dates may not be valid if NUM_RECORDS is changed
+    Calendar startDateCal = new GregorianCalendar(2015, 0, 6);
+    Calendar endDateCal = new GregorianCalendar(2015, 0, 10);
     DateFormat dateFormat = new SimpleDateFormat(Conflict.DATE_FORMAT);
     JsonNode jsonResponse =
       target(ConflictResource.PATH + "/getConflictsInDateRange")
@@ -124,7 +129,36 @@ public class ConflictResourceTest extends JerseyTest {
         && conflictCal.get(Calendar.DAY_OF_YEAR) <= endDateCal
           .get(Calendar.DAY_OF_YEAR));
     }
-    // Test for BAD_REQUEST responses
+    // Test with start date null
+    jsonResponse = target(ConflictResource.PATH + "/getConflictsInDateRange")
+      .queryParam("endDate", dateFormat.format(endDateCal.getTime())).request()
+      .get(JsonNode.class);
+    retrievedConflicts =
+      mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
+      });
+    assertEquals(endDateCal.get(Calendar.DAY_OF_YEAR)
+      - initialDate.get(Calendar.DAY_OF_YEAR) + 1, retrievedConflicts.size());
+    // Test with end date null
+    jsonResponse = target(ConflictResource.PATH + "/getConflictsInDateRange")
+      .queryParam("startDate", dateFormat.format(startDateCal.getTime()))
+      .request().get(JsonNode.class);
+    retrievedConflicts =
+      mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
+      });
+    assertEquals(
+      finalDate.get(Calendar.DAY_OF_YEAR)
+        - startDateCal.get(Calendar.DAY_OF_YEAR) + 1,
+      retrievedConflicts.size());
+    // Test with both null
+    jsonResponse = target(ConflictResource.PATH + "/getConflictsInDateRange")
+      .request().get(JsonNode.class);
+    retrievedConflicts =
+      mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
+      });
+    assertEquals(0, retrievedConflicts.size());
+
+    // Tests for BAD_REQUEST responses
+    // BAD_REQUEST test 1 - Invalid date format for start date
     Response response =
       target(ConflictResource.PATH + "/getConflictsInDateRange")
         .queryParam("startDate", "20150101")
@@ -135,6 +169,7 @@ public class ConflictResourceTest extends JerseyTest {
     IOUtils.copy((InputStream) response.getEntity(), responseContent);
     assertEquals("Start date not in expected format: " + Conflict.DATE_FORMAT,
       responseContent.toString());
+    // BAD_REQUEST test 2 - Invalid date format for end date
     response = target(ConflictResource.PATH + "/getConflictsInDateRange")
       .queryParam("startDate", dateFormat.format(startDateCal.getTime()))
       .queryParam("endDate", "20150105").request().get(Response.class);
@@ -142,6 +177,16 @@ public class ConflictResourceTest extends JerseyTest {
     responseContent = new StringWriter();
     IOUtils.copy((InputStream) response.getEntity(), responseContent);
     assertEquals("End date not in expected format: " + Conflict.DATE_FORMAT,
+      responseContent.toString());
+    // BAD_REQUEST test 3 - End date before start date
+    response = target(ConflictResource.PATH + "/getConflictsInDateRange")
+      .queryParam("startDate", dateFormat.format(endDateCal.getTime()))
+      .queryParam("endDate", dateFormat.format(startDateCal.getTime()))
+      .request().get(Response.class);
+    assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+    responseContent = new StringWriter();
+    IOUtils.copy((InputStream) response.getEntity(), responseContent);
+    assertEquals("End date should be after start date",
       responseContent.toString());
   }
 
@@ -178,10 +223,8 @@ public class ConflictResourceTest extends JerseyTest {
     List<Conflict> retrievedConflicts =
       mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
       });
-    assertEquals(
-      (int) TestDataConfig.NUM_RECORDS / TestDataConfig.ACTOR1_MODULUS
-        + (int) TestDataConfig.NUM_RECORDS / TestDataConfig.ACTOR2_MODULUS + 1,
-      retrievedConflicts.size());
+    assertEquals((int) NUM_RECORDS / ACTOR1_MODULUS
+      + (int) NUM_RECORDS / ACTOR2_MODULUS + 1, retrievedConflicts.size());
     for (Conflict conflict : retrievedConflicts) {
       assertTrue("Actor 0".equalsIgnoreCase(conflict.getActor1())
         || "Actor 0".equalsIgnoreCase(conflict.getActor2()));
@@ -192,10 +235,8 @@ public class ConflictResourceTest extends JerseyTest {
     List<Conflict> retrievedConflicts2 =
       mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
       });
-    assertEquals(
-      (int) TestDataConfig.NUM_RECORDS / TestDataConfig.ACTOR1_MODULUS
-        + (int) TestDataConfig.NUM_RECORDS / TestDataConfig.ACTOR2_MODULUS + 1,
-      retrievedConflicts2.size());
+    assertEquals((int) NUM_RECORDS / ACTOR1_MODULUS
+      + (int) NUM_RECORDS / ACTOR2_MODULUS + 1, retrievedConflicts2.size());
     for (Conflict conflict : retrievedConflicts2) {
       assertTrue("acTor 0".equalsIgnoreCase(conflict.getActor1())
         || "acTor 0".equalsIgnoreCase(conflict.getActor2()));
@@ -271,21 +312,60 @@ public class ConflictResourceTest extends JerseyTest {
   }
 
   @Test
-  public void testGetConflictsInFatalityRange() {
-    // NOTE: This test will break if NUM_RECORDS set to less than 2
+  public void testGetConflictsInFatalityRange() throws IOException {
+    // NOTE: This test will break if NUM_RECORDS set to less than 3
     JsonNode jsonResponse =
       target(ConflictResource.PATH + "/getConflictsInFatalityRange")
-        .queryParam("lowEnd", 0)
-        .queryParam("highEnd", TestDataConfig.NUM_RECORDS - 2).request()
-        .get(JsonNode.class);
+        .queryParam("lowEnd", 1).queryParam("highEnd", NUM_RECORDS - 2)
+        .request().get(JsonNode.class);
     List<Conflict> retrievedConflicts =
       mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
       });
-    assertEquals(TestDataConfig.NUM_RECORDS - 1, retrievedConflicts.size());
+    assertEquals(NUM_RECORDS - 2, retrievedConflicts.size());
     for (Conflict conflict : retrievedConflicts) {
-      assertTrue(conflict.getFatalities() >= 0
-        && conflict.getFatalities() <= TestDataConfig.NUM_RECORDS - 2);
+      assertTrue(conflict.getFatalities() >= 1
+        && conflict.getFatalities() <= NUM_RECORDS - 2);
     }
+    // Test with low end null
+    jsonResponse =
+      target(ConflictResource.PATH + "/getConflictsInFatalityRange")
+        .queryParam("highEnd", NUM_RECORDS - 1).request().get(JsonNode.class);
+    retrievedConflicts =
+      mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
+      });
+    assertEquals(NUM_RECORDS, retrievedConflicts.size());
+    for (Conflict conflict : retrievedConflicts) {
+      assertTrue(conflict.getFatalities() <= NUM_RECORDS - 1);
+    }
+    // Test with high end null
+    jsonResponse =
+      target(ConflictResource.PATH + "/getConflictsInFatalityRange")
+        .queryParam("lowEnd", 1).request().get(JsonNode.class);
+    retrievedConflicts =
+      mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
+      });
+    assertEquals(NUM_RECORDS - 1, retrievedConflicts.size());
+    for (Conflict conflict : retrievedConflicts) {
+      assertTrue(conflict.getFatalities() >= 1);
+    }
+    // Test with both null
+    jsonResponse =
+      target(ConflictResource.PATH + "/getConflictsInFatalityRange").request()
+        .get(JsonNode.class);
+    retrievedConflicts =
+      mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
+      });
+    assertEquals(0, retrievedConflicts.size());
+    // Test for BAD_REQUEST response (high end greater than low end)
+    Response response =
+      target(ConflictResource.PATH + "/getConflictsInFatalityRange")
+        .queryParam("lowEnd", 2).queryParam("highEnd", 1).request()
+        .get(Response.class);
+    assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+    StringWriter responseContent = new StringWriter();
+    IOUtils.copy((InputStream) response.getEntity(), responseContent);
+    assertEquals("High end should be greater than low end",
+      responseContent.toString());
   }
 
   @Test
@@ -295,7 +375,7 @@ public class ConflictResourceTest extends JerseyTest {
     List<String> retrievedCountries =
       mapper.convertValue(jsonResponse, new TypeReference<List<String>>() {
       });
-    assertEquals(TestDataConfig.NUM_RECORDS, retrievedCountries.size());
+    assertEquals(NUM_RECORDS, retrievedCountries.size());
     for (int i = 0; i < retrievedCountries.size(); i++) {
       assertEquals("Country " + i, retrievedCountries.get(i));
     }
@@ -310,10 +390,10 @@ public class ConflictResourceTest extends JerseyTest {
       mapper.convertValue(jsonResponse, new TypeReference<List<String>>() {
       });
     int numRecords;
-    if (TestDataConfig.ACTOR1_MODULUS > TestDataConfig.ACTOR2_MODULUS) {
-      numRecords = TestDataConfig.ACTOR1_MODULUS;
+    if (ACTOR1_MODULUS > ACTOR2_MODULUS) {
+      numRecords = ACTOR1_MODULUS;
     } else {
-      numRecords = TestDataConfig.ACTOR2_MODULUS;
+      numRecords = ACTOR2_MODULUS;
     }
     assertEquals(numRecords, retrievedActors.size());
     for (int i = 0; i < retrievedActors.size(); i++) {

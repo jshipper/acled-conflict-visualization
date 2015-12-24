@@ -36,8 +36,9 @@ public interface ConflictService {
    *          Start of date range
    * @param endDate
    *          End of date range
-   * @return A list of all conflicts within the provided date range, empty list
-   *         if none
+   * @return A list of all conflicts within the provided date range. Empty list
+   *         if none, if both dates are null, or if end date is before start
+   *         date.
    */
   public List<Conflict> getConflictsInDateRange(Date startDate, Date endDate);
 
@@ -91,7 +92,8 @@ public interface ConflictService {
    * @param highEnd
    *          High end number of fatalities
    * @return A list of all conflicts with a number of fatalities within the
-   *         provided range, empty list if none
+   *         provided range. Empty list if none, if both numbers are null, or if
+   *         highEnd lower than lowEnd
    */
   public List<Conflict> getConflictsInFatalityRange(Integer lowEnd,
     Integer highEnd);

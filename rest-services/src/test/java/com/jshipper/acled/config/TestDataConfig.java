@@ -24,6 +24,9 @@ public class TestDataConfig {
   public static final int ACTOR1_MODULUS = 5;
   public static final int ACTOR2_MODULUS = 13;
   public static List<Conflict> CONFLICTS;
+  public static final Calendar initialDate = new GregorianCalendar(2015, 0, 1);
+  public static final Calendar finalDate =
+    new GregorianCalendar(2015, 0, NUM_RECORDS);
 
   @Bean
   public boolean createTestData(SessionFactory sessionFactory) {
@@ -31,7 +34,8 @@ public class TestDataConfig {
     Session session = sessionFactory.openSession();
     session.getTransaction().begin();
     // Create some test records
-    Calendar c = new GregorianCalendar(2015, 0, 1);
+    Calendar c = new GregorianCalendar();
+    c.setTime(initialDate.getTime());
     for (int i = 0; i < NUM_RECORDS; i++) {
       Conflict conflict = new Conflict();
       conflict.setId(new Long(i));

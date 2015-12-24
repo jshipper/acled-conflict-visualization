@@ -1,6 +1,7 @@
 package com.jshipper.acled.dao;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -46,6 +47,10 @@ public class ConflictDaoImpl implements ConflictDao {
   @SuppressWarnings("unchecked")
   @Override
   public List<Conflict> getConflictsInDateRange(Date startDate, Date endDate) {
+    if (startDate == null && endDate == null
+      || (startDate != null && endDate != null && endDate.before(startDate))) {
+      return Collections.EMPTY_LIST;
+    }
     Session session = sessionFactory.getCurrentSession();
     Query query = session.getNamedQuery(Conflict.IN_DATE_RANGE_QUERY);
     query.setDate("startDate", startDate);
@@ -94,10 +99,22 @@ public class ConflictDaoImpl implements ConflictDao {
   @Override
   public List<Conflict> getConflictsInFatalityRange(Integer lowEnd,
     Integer highEnd) {
+    if (lowEnd == null && highEnd == null
+      || (lowEnd != null && highEnd != null && highEnd < lowEnd)) {
+      return Collections.EMPTY_LIST;
+    }
     Session session = sessionFactory.getCurrentSession();
     Query query = session.getNamedQuery(Conflict.IN_FATALITY_RANGE_QUERY);
-    query.setInteger("lowEnd", lowEnd);
-    query.setInteger("highEnd", highEnd);
+    if (lowEnd != null) {
+      query.setInteger("lowEnd", lowEnd);
+    } else {
+      query.setParameter("lowEnd", null);
+    }
+    if (highEnd != null) {
+      query.setInteger("highEnd", highEnd);
+    } else {
+      query.setParameter("highEnd", null);
+    }
     return query.list();
   }
 
