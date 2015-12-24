@@ -1,10 +1,13 @@
-package com.jshipper.acled;
+package com.jshipper.acled.service;
 
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
 import org.springframework.transaction.annotation.Transactional;
+
+import com.jshipper.acled.dao.ConflictDao;
+import com.jshipper.acled.model.Conflict;
 
 /**
  * Implementation of service to interface between ACLED DAO and REST services

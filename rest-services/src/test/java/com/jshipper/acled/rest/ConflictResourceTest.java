@@ -1,4 +1,4 @@
-package com.jshipper.acled;
+package com.jshipper.acled.rest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -26,6 +26,11 @@ import org.springframework.core.io.support.ResourcePropertySource;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jshipper.acled.config.ConflictServiceConfig;
+import com.jshipper.acled.config.ConflictResourceConfig;
+import com.jshipper.acled.config.TestDataConfig;
+import com.jshipper.acled.model.Conflict;
+import com.jshipper.acled.rest.ConflictResource;
 
 public class ConflictResourceTest extends JerseyTest {
   private ObjectMapper mapper;
@@ -43,7 +48,7 @@ public class ConflictResourceTest extends JerseyTest {
     }
     AnnotationConfigApplicationContext context =
       new AnnotationConfigApplicationContext();
-    context.register(ConflictDaoConfig.class);
+    context.register(ConflictServiceConfig.class);
     context.register(TestDataConfig.class);
     context.getEnvironment().getPropertySources().addLast(props);
     context.refresh();

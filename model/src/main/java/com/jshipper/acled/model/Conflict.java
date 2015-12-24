@@ -1,4 +1,4 @@
-package com.jshipper.acled;
+package com.jshipper.acled.model;
 
 import java.io.Serializable;
 import java.util.Calendar;

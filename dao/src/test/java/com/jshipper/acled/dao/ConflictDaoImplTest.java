@@ -1,4 +1,4 @@
-package com.jshipper.acled;
+package com.jshipper.acled.dao;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -17,6 +17,9 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.jshipper.acled.dao.ConflictDaoImpl;
+import com.jshipper.acled.model.Conflict;
 
 public class ConflictDaoImplTest {
   public static final int NUM_RECORDS = 21;
@@ -70,7 +73,7 @@ public class ConflictDaoImplTest {
     // Debugging properties
     props.put("hibernate.show_sql", "true");
     props.put("hibernate.format_sql", "true");
-    config.addPackage("com.jshipper.acled").setProperties(props)
+    config.addPackage("com.jshipper.acled.model").setProperties(props)
       .addAnnotatedClass(Conflict.class);
     return config.buildSessionFactory(
       new StandardServiceRegistryBuilder().applySettings(props).build());

@@ -1,4 +1,4 @@
-package com.jshipper.acled;
+package com.jshipper.acled.config;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -10,6 +10,14 @@ import org.hibernate.SessionFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.jshipper.acled.model.Conflict;
+
+/**
+ * Sets up and persists test data
+ * 
+ * @author jshipper
+ *
+ */
 @Configuration
 public class TestDataConfig {
   public static final int NUM_RECORDS = 21;

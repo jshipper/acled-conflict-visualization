@@ -1,4 +1,4 @@
-package com.jshipper.acled;
+package com.jshipper.acled.config;
 
 import java.util.Properties;
 
@@ -16,6 +16,11 @@ import org.springframework.orm.hibernate4.LocalSessionFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import com.jshipper.acled.dao.ConflictDao;
+import com.jshipper.acled.dao.ConflictDaoImpl;
+import com.jshipper.acled.service.ConflictService;
+import com.jshipper.acled.service.ConflictServiceImpl;
+
 /**
  * Configures transaction management and needed beans for ConflictService
  * 
@@ -24,7 +29,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  */
 @Configuration
 @EnableTransactionManagement
-public class ConflictDaoConfig {
+public class ConflictServiceConfig {
   @Bean
   public ConflictService conflictService(ConflictDao dao) {
     return new ConflictServiceImpl(dao);
@@ -75,7 +80,7 @@ public class ConflictDaoConfig {
     @Qualifier("hibernateProps") Properties props, DataSource dataSource) {
     LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
     sessionFactory.setDataSource(dataSource);
-    sessionFactory.setPackagesToScan("com.jshipper.acled");
+    sessionFactory.setPackagesToScan("com.jshipper.acled.model");
     sessionFactory.setHibernateProperties(props);
     return sessionFactory;
   }

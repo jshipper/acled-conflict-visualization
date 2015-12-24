@@ -1,4 +1,4 @@
-package com.jshipper.acled;
+package com.jshipper.acled.dao;
 
 import java.util.Collection;
 import java.util.Date;
@@ -9,6 +9,8 @@ import org.hibernate.Query;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+
+import com.jshipper.acled.model.Conflict;
 
 /**
  * Data access object (DAO) implementation for the ACLED dataset

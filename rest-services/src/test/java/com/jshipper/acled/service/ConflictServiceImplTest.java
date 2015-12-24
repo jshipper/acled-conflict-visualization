@@ -1,4 +1,4 @@
-package com.jshipper.acled;
+package com.jshipper.acled.service;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -15,6 +15,11 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.io.support.ResourcePropertySource;
 
+import com.jshipper.acled.config.ConflictServiceConfig;
+import com.jshipper.acled.config.TestDataConfig;
+import com.jshipper.acled.model.Conflict;
+import com.jshipper.acled.service.ConflictService;
+
 public class ConflictServiceImplTest {
   private static AnnotationConfigApplicationContext context;
 
@@ -23,7 +28,7 @@ public class ConflictServiceImplTest {
     PropertiesPropertySource props =
       new ResourcePropertySource("classpath:/test-app.properties");
     context = new AnnotationConfigApplicationContext();
-    context.register(ConflictDaoConfig.class);
+    context.register(ConflictServiceConfig.class);
     context.register(TestDataConfig.class);
     context.getEnvironment().getPropertySources().addLast(props);
     context.refresh();

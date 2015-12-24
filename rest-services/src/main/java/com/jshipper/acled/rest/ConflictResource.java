@@ -1,4 +1,4 @@
-package com.jshipper.acled;
+package com.jshipper.acled.rest;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -16,8 +16,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.jshipper.acled.model.Conflict;
+import com.jshipper.acled.service.ConflictService;
 
 /**
  * REST services for ACLED dataset
@@ -25,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
  * @author jshipper
  *
  */
-@Service
 @Singleton
 @Path(ConflictResource.PATH)
 public class ConflictResource {

@@ -1,4 +1,4 @@
-package com.jshipper.acled;
+package com.jshipper.acled.config;
 
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -14,6 +14,6 @@ public class ConflictResourceConfig extends ResourceConfig {
   public ConflictResourceConfig() {
     register(RequestContextFilter.class);
     register(JacksonFeature.class);
-    packages("com.jshipper.acled");
+    packages("com.jshipper.acled.rest");
   }
 }

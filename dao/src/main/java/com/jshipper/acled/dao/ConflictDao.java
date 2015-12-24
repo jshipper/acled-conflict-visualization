@@ -1,16 +1,18 @@
-package com.jshipper.acled;
+package com.jshipper.acled.dao;
 
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import com.jshipper.acled.model.Conflict;
+
 /**
- * Service to interface between ACLED DAO and REST services
+ * Data access object (DAO) interface for the ACLED dataset
  * 
  * @author jshipper
  *
  */
-public interface ConflictService {
+public interface ConflictDao {
   /**
    * Get all conflicts
    * 
