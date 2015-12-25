@@ -9,6 +9,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 
 import com.jshipper.acled.model.Conflict;
 
@@ -19,6 +20,7 @@ import com.jshipper.acled.model.Conflict;
  *
  */
 @Configuration
+@PropertySource("classpath:test-app.properties")
 public class TestDataConfig {
   public static final int NUM_RECORDS = 21;
   public static final int ACTOR1_MODULUS = 5;

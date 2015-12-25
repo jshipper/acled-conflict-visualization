@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import org.hibernate.FlushMode;
 import org.hibernate.Query;
 import org.hibernate.ScrollableResults;
@@ -23,6 +25,7 @@ public class ConflictDaoImpl implements ConflictDao {
   public static final int BATCH_SIZE = 20;
   private SessionFactory sessionFactory;
 
+  @Inject
   public ConflictDaoImpl(SessionFactory sessionFactory) {
     this.sessionFactory = sessionFactory;
   }

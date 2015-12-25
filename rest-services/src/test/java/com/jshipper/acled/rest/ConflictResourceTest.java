@@ -26,8 +26,6 @@ import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.core.env.PropertiesPropertySource;
-import org.springframework.core.io.support.ResourcePropertySource;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -45,17 +43,10 @@ public class ConflictResourceTest extends JerseyTest {
     mapper = new ObjectMapper();
     mapper.setDateFormat(new SimpleDateFormat(Conflict.DATE_FORMAT));
     ConflictResourceConfig config = new ConflictResourceConfig();
-    PropertiesPropertySource props = null;
-    try {
-      props = new ResourcePropertySource("classpath:/test-app.properties");
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
     AnnotationConfigApplicationContext context =
       new AnnotationConfigApplicationContext();
     context.register(ConflictServiceConfig.class);
     context.register(TestDataConfig.class);
-    context.getEnvironment().getPropertySources().addLast(props);
     context.refresh();
     config.property("contextConfig", context);
     return config;

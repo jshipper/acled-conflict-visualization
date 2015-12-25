@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jshipper.acled.dao.ConflictDao;
@@ -19,6 +21,7 @@ import com.jshipper.acled.model.Conflict;
 public class ConflictServiceImpl implements ConflictService {
   private ConflictDao dao;
 
+  @Inject
   public ConflictServiceImpl(ConflictDao dao) {
     this.dao = dao;
   }

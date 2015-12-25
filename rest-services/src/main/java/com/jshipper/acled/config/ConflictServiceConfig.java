@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.orm.hibernate4.HibernateTransactionManager;
 import org.springframework.orm.hibernate4.LocalSessionFactoryBean;
@@ -29,6 +30,7 @@ import com.jshipper.acled.service.ConflictServiceImpl;
  */
 @Configuration
 @EnableTransactionManagement
+@PropertySource("classpath:app.properties")
 public class ConflictServiceConfig {
   @Bean
   public ConflictService conflictService(ConflictDao dao) {

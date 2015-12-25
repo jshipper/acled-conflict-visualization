@@ -18,8 +18,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.core.env.PropertiesPropertySource;
-import org.springframework.core.io.support.ResourcePropertySource;
 
 import com.jshipper.acled.config.ConflictServiceConfig;
 import com.jshipper.acled.config.TestDataConfig;
@@ -30,12 +28,9 @@ public class ConflictServiceImplTest {
 
   @BeforeClass
   public static void setup() throws IOException {
-    PropertiesPropertySource props =
-      new ResourcePropertySource("classpath:/test-app.properties");
     context = new AnnotationConfigApplicationContext();
     context.register(ConflictServiceConfig.class);
     context.register(TestDataConfig.class);
-    context.getEnvironment().getPropertySources().addLast(props);
     context.refresh();
   }
 
