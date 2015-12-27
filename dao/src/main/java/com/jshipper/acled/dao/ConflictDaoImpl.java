@@ -94,7 +94,11 @@ public class ConflictDaoImpl implements ConflictDao {
   public List<Conflict> getConflictsByFatalities(Integer fatalities) {
     Session session = sessionFactory.getCurrentSession();
     Query query = session.getNamedQuery(Conflict.BY_FATALITIES_QUERY);
-    query.setInteger("fatalities", fatalities);
+    if (fatalities != null) {
+      query.setInteger("fatalities", fatalities);
+    } else {
+      query.setParameter("fatalities", null);
+    }
     return query.list();
   }
 
@@ -108,6 +112,37 @@ public class ConflictDaoImpl implements ConflictDao {
     }
     Session session = sessionFactory.getCurrentSession();
     Query query = session.getNamedQuery(Conflict.IN_FATALITY_RANGE_QUERY);
+    if (lowEnd != null) {
+      query.setInteger("lowEnd", lowEnd);
+    } else {
+      query.setParameter("lowEnd", null);
+    }
+    if (highEnd != null) {
+      query.setInteger("highEnd", highEnd);
+    } else {
+      query.setParameter("highEnd", null);
+    }
+    return query.list();
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public List<Conflict> getConflictsByCriteria(Date startDate, Date endDate,
+    String country, String actor1, String actor2, Integer lowEnd,
+    Integer highEnd) {
+    if (startDate == null && endDate == null && country == null
+      && actor1 == null && actor2 == null && lowEnd == null && highEnd == null
+      || (startDate != null && endDate != null && endDate.before(startDate))
+      || (lowEnd != null && highEnd != null && highEnd < lowEnd)) {
+      return Collections.EMPTY_LIST;
+    }
+    Session session = sessionFactory.getCurrentSession();
+    Query query = session.getNamedQuery(Conflict.BY_CRITERIA_QUERY);
+    query.setDate("startDate", startDate);
+    query.setDate("endDate", endDate);
+    query.setString("country", country);
+    query.setString("actor1", actor1);
+    query.setString("actor2", actor2);
     if (lowEnd != null) {
       query.setInteger("lowEnd", lowEnd);
     } else {

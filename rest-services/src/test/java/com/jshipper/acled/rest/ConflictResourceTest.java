@@ -360,6 +360,338 @@ public class ConflictResourceTest extends JerseyTest {
   }
 
   @Test
+  public void testGetConflictsByCriteria() throws IOException {
+    // Tests with dates
+    // NOTE: These dates may not be valid if NUM_RECORDS is changed
+    Calendar startDateCal = new GregorianCalendar(2015, 0, 6);
+    Calendar endDateCal = new GregorianCalendar(2015, 0, 10);
+    DateFormat dateFormat = new SimpleDateFormat(Conflict.DATE_FORMAT);
+    JsonNode jsonResponse =
+      target(ConflictResource.PATH + "/getConflictsByCriteria")
+        .queryParam("startDate", dateFormat.format(startDateCal.getTime()))
+        .queryParam("endDate", dateFormat.format(endDateCal.getTime()))
+        .request().get(JsonNode.class);
+    List<Conflict> retrievedConflicts =
+      mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
+      });
+    assertEquals(
+      endDateCal.get(Calendar.DAY_OF_YEAR)
+        - startDateCal.get(Calendar.DAY_OF_YEAR) + 1,
+      retrievedConflicts.size());
+    for (Conflict conflict : retrievedConflicts) {
+      Calendar conflictCal = new GregorianCalendar();
+      conflictCal.setTime(conflict.getDate());
+      assertTrue(
+        conflictCal.get(Calendar.YEAR) >= startDateCal.get(Calendar.YEAR)
+          && conflictCal.get(Calendar.YEAR) <= endDateCal.get(Calendar.YEAR)
+          && conflictCal.get(Calendar.DAY_OF_YEAR) >= startDateCal
+            .get(Calendar.DAY_OF_YEAR)
+        && conflictCal.get(Calendar.DAY_OF_YEAR) <= endDateCal
+          .get(Calendar.DAY_OF_YEAR));
+    }
+    // Test with start date null
+    jsonResponse = target(ConflictResource.PATH + "/getConflictsByCriteria")
+      .queryParam("endDate", dateFormat.format(endDateCal.getTime())).request()
+      .get(JsonNode.class);
+    retrievedConflicts =
+      mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
+      });
+    assertEquals(endDateCal.get(Calendar.DAY_OF_YEAR)
+      - initialDate.get(Calendar.DAY_OF_YEAR) + 1, retrievedConflicts.size());
+    // Test with end date null
+    jsonResponse = target(ConflictResource.PATH + "/getConflictsByCriteria")
+      .queryParam("startDate", dateFormat.format(startDateCal.getTime()))
+      .request().get(JsonNode.class);
+    retrievedConflicts =
+      mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
+      });
+    assertEquals(
+      finalDate.get(Calendar.DAY_OF_YEAR)
+        - startDateCal.get(Calendar.DAY_OF_YEAR) + 1,
+      retrievedConflicts.size());
+    // Test with both null
+    jsonResponse = target(ConflictResource.PATH + "/getConflictsByCriteria")
+      .request().get(JsonNode.class);
+    retrievedConflicts =
+      mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
+      });
+    assertEquals(0, retrievedConflicts.size());
+
+    // Tests for BAD_REQUEST responses
+    // BAD_REQUEST test 1 - Invalid date format for start date
+    Response response =
+      target(ConflictResource.PATH + "/getConflictsByCriteria")
+        .queryParam("startDate", "20150101")
+        .queryParam("endDate", dateFormat.format(endDateCal.getTime()))
+        .request().get(Response.class);
+    assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+    StringWriter responseContent = new StringWriter();
+    IOUtils.copy((InputStream) response.getEntity(), responseContent);
+    assertEquals("Start date not in expected format: " + Conflict.DATE_FORMAT,
+      responseContent.toString());
+    // BAD_REQUEST test 2 - Invalid date format for end date
+    response = target(ConflictResource.PATH + "/getConflictsByCriteria")
+      .queryParam("startDate", dateFormat.format(startDateCal.getTime()))
+      .queryParam("endDate", "20150105").request().get(Response.class);
+    assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+    responseContent = new StringWriter();
+    IOUtils.copy((InputStream) response.getEntity(), responseContent);
+    assertEquals("End date not in expected format: " + Conflict.DATE_FORMAT,
+      responseContent.toString());
+    // BAD_REQUEST test 3 - End date before start date
+    response = target(ConflictResource.PATH + "/getConflictsByCriteria")
+      .queryParam("startDate", dateFormat.format(endDateCal.getTime()))
+      .queryParam("endDate", dateFormat.format(startDateCal.getTime()))
+      .request().get(Response.class);
+    assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+    responseContent = new StringWriter();
+    IOUtils.copy((InputStream) response.getEntity(), responseContent);
+    assertEquals("End date should be after start date",
+      responseContent.toString());
+
+    // Tests with country
+    jsonResponse = target(ConflictResource.PATH + "/getConflictsByCriteria")
+      .queryParam("country", "Country 0").request().get(JsonNode.class);
+    retrievedConflicts =
+      mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
+      });
+    assertEquals(1, retrievedConflicts.size());
+    for (Conflict conflict : retrievedConflicts) {
+      assertTrue("Country 0".equalsIgnoreCase(conflict.getCountry()));
+    }
+    jsonResponse = target(ConflictResource.PATH + "/getConflictsByCriteria")
+      .queryParam("country", "counTry 0").request().get(JsonNode.class);
+    List<Conflict> retrievedConflicts2 =
+      mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
+      });
+    assertEquals(1, retrievedConflicts2.size());
+    for (Conflict conflict : retrievedConflicts2) {
+      assertTrue("counTry 0".equalsIgnoreCase(conflict.getCountry()));
+    }
+    assertEquals(retrievedConflicts, retrievedConflicts2);
+
+    // Tests with actors
+    jsonResponse = target(ConflictResource.PATH + "/getConflictsByCriteria")
+      .queryParam("actor1", "Actor 0").queryParam("actor2", "Actor 1").request()
+      .get(JsonNode.class);
+    retrievedConflicts =
+      mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
+      });
+    // NOTE: This expected size could change if NUM_RECORDS or moduli are
+    // changed
+    assertEquals(1, retrievedConflicts.size());
+    for (Conflict conflict : retrievedConflicts) {
+      assertTrue(("Actor 0".equalsIgnoreCase(conflict.getActor1())
+        || "Actor 0".equalsIgnoreCase(conflict.getActor2()))
+        && ("Actor 1".equalsIgnoreCase(conflict.getActor1())
+          || "Actor 1".equalsIgnoreCase(conflict.getActor2())));
+    }
+    jsonResponse = target(ConflictResource.PATH + "/getConflictsByCriteria")
+      .queryParam("actor1", "acTor 0").queryParam("actor2", "ActOR 1").request()
+      .get(JsonNode.class);
+    retrievedConflicts2 =
+      mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
+      });
+    // NOTE: This expected size could change if NUM_RECORDS or moduli are
+    // changed
+    assertEquals(1, retrievedConflicts2.size());
+    for (Conflict conflict : retrievedConflicts2) {
+      assertTrue(("acTor 0".equalsIgnoreCase(conflict.getActor1())
+        || "acTor 0".equalsIgnoreCase(conflict.getActor2()))
+        && ("ActOR 1".equalsIgnoreCase(conflict.getActor1())
+          || "ActOR 1".equalsIgnoreCase(conflict.getActor2())));
+    }
+    assertEquals(retrievedConflicts, retrievedConflicts2);
+    jsonResponse = target(ConflictResource.PATH + "/getConflictsByCriteria")
+      .queryParam("actor1", "ActOR 1").queryParam("actor2", "acTor 0").request()
+      .get(JsonNode.class);
+    List<Conflict> retrievedConflicts3 =
+      mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
+      });
+    // NOTE: This expected size could change if NUM_RECORDS or moduli are
+    // changed
+    assertEquals(1, retrievedConflicts3.size());
+    for (Conflict conflict : retrievedConflicts3) {
+      assertTrue(("acTor 0".equalsIgnoreCase(conflict.getActor1())
+        || "acTor 0".equalsIgnoreCase(conflict.getActor2()))
+        && ("ActOR 1".equalsIgnoreCase(conflict.getActor1())
+          || "ActOR 1".equalsIgnoreCase(conflict.getActor2())));
+    }
+    assertEquals(retrievedConflicts, retrievedConflicts3);
+    assertEquals(retrievedConflicts2, retrievedConflicts3);
+
+    // Tests with fatalities
+    // NOTE: This test will break if NUM_RECORDS set to less than 3
+    jsonResponse = target(ConflictResource.PATH + "/getConflictsByCriteria")
+      .queryParam("lowEnd", 1).queryParam("highEnd", NUM_RECORDS - 2).request()
+      .get(JsonNode.class);
+    retrievedConflicts =
+      mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
+      });
+    assertEquals(NUM_RECORDS - 2, retrievedConflicts.size());
+    for (Conflict conflict : retrievedConflicts) {
+      assertTrue(conflict.getFatalities() >= 1
+        && conflict.getFatalities() <= NUM_RECORDS - 2);
+    }
+    // Test with low end null
+    jsonResponse = target(ConflictResource.PATH + "/getConflictsByCriteria")
+      .queryParam("highEnd", NUM_RECORDS - 1).request().get(JsonNode.class);
+    retrievedConflicts =
+      mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
+      });
+    assertEquals(NUM_RECORDS, retrievedConflicts.size());
+    for (Conflict conflict : retrievedConflicts) {
+      assertTrue(conflict.getFatalities() <= NUM_RECORDS - 1);
+    }
+    // Test with high end null
+    jsonResponse = target(ConflictResource.PATH + "/getConflictsByCriteria")
+      .queryParam("lowEnd", 1).request().get(JsonNode.class);
+    retrievedConflicts =
+      mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
+      });
+    assertEquals(NUM_RECORDS - 1, retrievedConflicts.size());
+    for (Conflict conflict : retrievedConflicts) {
+      assertTrue(conflict.getFatalities() >= 1);
+    }
+    // Test with both null
+    jsonResponse = target(ConflictResource.PATH + "/getConflictsByCriteria")
+      .request().get(JsonNode.class);
+    retrievedConflicts =
+      mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
+      });
+    assertEquals(0, retrievedConflicts.size());
+    // Test for BAD_REQUEST response (high end greater than low end)
+    response = target(ConflictResource.PATH + "/getConflictsByCriteria")
+      .queryParam("lowEnd", 2).queryParam("highEnd", 1).request()
+      .get(Response.class);
+    assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+    responseContent = new StringWriter();
+    IOUtils.copy((InputStream) response.getEntity(), responseContent);
+    assertEquals("High end should be greater than low end",
+      responseContent.toString());
+
+    // Tests with criteria combinations
+    // NOTE: These tests are very brittle, tied to values of constants
+    jsonResponse = target(ConflictResource.PATH + "/getConflictsByCriteria")
+      .queryParam("startDate", dateFormat.format(startDateCal.getTime()))
+      .queryParam("endDate", dateFormat.format(endDateCal.getTime()))
+      .queryParam("country", "Country 5").request().get(JsonNode.class);
+    retrievedConflicts =
+      mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
+      });
+    assertEquals(1, retrievedConflicts.size());
+    for (Conflict conflict : retrievedConflicts) {
+      Calendar conflictCal = new GregorianCalendar();
+      conflictCal.setTime(conflict.getDate());
+      assertTrue(
+        conflictCal.get(Calendar.YEAR) >= startDateCal.get(Calendar.YEAR)
+          && conflictCal.get(Calendar.YEAR) <= endDateCal.get(Calendar.YEAR)
+          && conflictCal.get(Calendar.DAY_OF_YEAR) >= startDateCal
+            .get(Calendar.DAY_OF_YEAR)
+        && conflictCal.get(Calendar.DAY_OF_YEAR) <= endDateCal
+          .get(Calendar.DAY_OF_YEAR));
+      assertEquals("Country 5", conflict.getCountry());
+    }
+    jsonResponse = target(ConflictResource.PATH + "/getConflictsByCriteria")
+      .queryParam("startDate", dateFormat.format(startDateCal.getTime()))
+      .queryParam("endDate", dateFormat.format(endDateCal.getTime()))
+      .queryParam("actor1", "Actor 0").queryParam("actor1", "Actor 6").request()
+      .get(JsonNode.class);
+    retrievedConflicts =
+      mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
+      });
+    assertEquals(1, retrievedConflicts.size());
+    for (Conflict conflict : retrievedConflicts) {
+      Calendar conflictCal = new GregorianCalendar();
+      conflictCal.setTime(conflict.getDate());
+      assertTrue(
+        conflictCal.get(Calendar.YEAR) >= startDateCal.get(Calendar.YEAR)
+          && conflictCal.get(Calendar.YEAR) <= endDateCal.get(Calendar.YEAR)
+          && conflictCal.get(Calendar.DAY_OF_YEAR) >= startDateCal
+            .get(Calendar.DAY_OF_YEAR)
+        && conflictCal.get(Calendar.DAY_OF_YEAR) <= endDateCal
+          .get(Calendar.DAY_OF_YEAR));
+      assertTrue("Actor 0".equalsIgnoreCase(conflict.getActor1())
+        || "Actor 0".equalsIgnoreCase(conflict.getActor2()));
+      assertTrue("Actor 6".equalsIgnoreCase(conflict.getActor1())
+        || "Actor 6".equalsIgnoreCase(conflict.getActor2()));
+    }
+    jsonResponse = target(ConflictResource.PATH + "/getConflictsByCriteria")
+      .queryParam("startDate", dateFormat.format(startDateCal.getTime()))
+      .queryParam("endDate", dateFormat.format(endDateCal.getTime()))
+      .queryParam("lowEnd", 5).queryParam("highEnd", 6).request()
+      .get(JsonNode.class);
+    retrievedConflicts =
+      mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
+      });
+    assertEquals(2, retrievedConflicts.size());
+    for (Conflict conflict : retrievedConflicts) {
+      Calendar conflictCal = new GregorianCalendar();
+      conflictCal.setTime(conflict.getDate());
+      assertTrue(
+        conflictCal.get(Calendar.YEAR) >= startDateCal.get(Calendar.YEAR)
+          && conflictCal.get(Calendar.YEAR) <= endDateCal.get(Calendar.YEAR)
+          && conflictCal.get(Calendar.DAY_OF_YEAR) >= startDateCal
+            .get(Calendar.DAY_OF_YEAR)
+        && conflictCal.get(Calendar.DAY_OF_YEAR) <= endDateCal
+          .get(Calendar.DAY_OF_YEAR));
+      assertTrue(
+        conflict.getFatalities() >= 5 && conflict.getFatalities() <= 6);
+    }
+    jsonResponse = target(ConflictResource.PATH + "/getConflictsByCriteria")
+      .queryParam("startDate", dateFormat.format(startDateCal.getTime()))
+      .queryParam("endDate", dateFormat.format(endDateCal.getTime()))
+      .queryParam("country", "Country 5").queryParam("lowEnd", 5)
+      .queryParam("highEnd", 6).request().get(JsonNode.class);
+    retrievedConflicts =
+      mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
+      });
+    assertEquals(1, retrievedConflicts.size());
+    for (Conflict conflict : retrievedConflicts) {
+      Calendar conflictCal = new GregorianCalendar();
+      conflictCal.setTime(conflict.getDate());
+      assertTrue(
+        conflictCal.get(Calendar.YEAR) >= startDateCal.get(Calendar.YEAR)
+          && conflictCal.get(Calendar.YEAR) <= endDateCal.get(Calendar.YEAR)
+          && conflictCal.get(Calendar.DAY_OF_YEAR) >= startDateCal
+            .get(Calendar.DAY_OF_YEAR)
+        && conflictCal.get(Calendar.DAY_OF_YEAR) <= endDateCal
+          .get(Calendar.DAY_OF_YEAR));
+      assertEquals("Country 5", conflict.getCountry());
+      assertTrue(
+        conflict.getFatalities() >= 5 && conflict.getFatalities() <= 6);
+    }
+    jsonResponse = target(ConflictResource.PATH + "/getConflictsByCriteria")
+      .queryParam("startDate", dateFormat.format(startDateCal.getTime()))
+      .queryParam("endDate", dateFormat.format(endDateCal.getTime()))
+      .queryParam("country", "Country 7").queryParam("actor1", "Actor 2")
+      .queryParam("actor1", "Actor 8").queryParam("lowEnd", 5)
+      .queryParam("highEnd", 8).request().get(JsonNode.class);
+    retrievedConflicts =
+      mapper.convertValue(jsonResponse, new TypeReference<List<Conflict>>() {
+      });
+    assertEquals(1, retrievedConflicts.size());
+    for (Conflict conflict : retrievedConflicts) {
+      Calendar conflictCal = new GregorianCalendar();
+      conflictCal.setTime(conflict.getDate());
+      assertTrue(
+        conflictCal.get(Calendar.YEAR) >= startDateCal.get(Calendar.YEAR)
+          && conflictCal.get(Calendar.YEAR) <= endDateCal.get(Calendar.YEAR)
+          && conflictCal.get(Calendar.DAY_OF_YEAR) >= startDateCal
+            .get(Calendar.DAY_OF_YEAR)
+        && conflictCal.get(Calendar.DAY_OF_YEAR) <= endDateCal
+          .get(Calendar.DAY_OF_YEAR));
+      assertEquals("Country 7", conflict.getCountry());
+      assertTrue(("Actor 2".equalsIgnoreCase(conflict.getActor1())
+        || "Actor 2".equalsIgnoreCase(conflict.getActor2()))
+        && ("Actor 8".equalsIgnoreCase(conflict.getActor1())
+          || "Actor 8".equalsIgnoreCase(conflict.getActor2())));
+      assertTrue(
+        conflict.getFatalities() >= 5 && conflict.getFatalities() <= 8);
+    }
+  }
+
+  @Test
   public void testGetAllCountries() {
     JsonNode jsonResponse = target(ConflictResource.PATH + "/getAllCountries")
       .request().get(JsonNode.class);

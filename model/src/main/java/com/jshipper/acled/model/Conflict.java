@@ -49,6 +49,15 @@ import javax.persistence.UniqueConstraint;
     query = "FROM " + Conflict.TABLE_NAME
       + " c WHERE (:lowEnd IS NULL OR c.fatalities >= :lowEnd) "
       + "AND (:highEnd IS NULL OR c.fatalities <= :highEnd)"),
+  @NamedQuery(name = Conflict.BY_CRITERIA_QUERY,
+    query = "FROM " + Conflict.TABLE_NAME
+      + " c WHERE (:startDate IS NULL OR c.date >= :startDate) "
+      + "AND (:endDate IS NULL OR c.date <= :endDate) "
+      + "AND (:country IS NULL OR lower(c.country) = lower(:country)) "
+      + "AND (:actor1 IS NULL OR lower(c.actor1) = lower(:actor1) OR lower(c.actor2) = lower(:actor1)) "
+      + "AND (:actor2 IS NULL OR lower(c.actor1) = lower(:actor2) OR lower(c.actor2) = lower(:actor2)) "
+      + "AND (:lowEnd IS NULL OR c.fatalities >= :lowEnd) "
+      + "AND (:highEnd IS NULL OR c.fatalities <= :highEnd) "),
   @NamedQuery(name = Conflict.ALL_COUNTRIES_QUERY,
     query = "SELECT DISTINCT c.country FROM " + Conflict.TABLE_NAME + " c"),
   @NamedQuery(name = Conflict.ALL_ACTOR1S_QUERY,
@@ -68,6 +77,7 @@ public class Conflict implements Serializable {
   public static final String BY_FATALITIES_QUERY = "getConflictsByFatalities";
   public static final String IN_FATALITY_RANGE_QUERY =
     "getConflictsInFatalityRange";
+  public static final String BY_CRITERIA_QUERY = "getConflictsByCriteria";
   public static final String ALL_COUNTRIES_QUERY = "getAllCountries";
   public static final String ALL_ACTOR1S_QUERY = "getAllActor1s";
   public static final String ALL_ACTOR2S_QUERY = "getAllActor2s";

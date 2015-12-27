@@ -99,6 +99,31 @@ public interface ConflictService {
     Integer highEnd);
 
   /**
+   * Get all conflicts that meet the specified criteria. All are optional, but
+   * at least one must not be null.
+   * 
+   * @param startDate
+   *          Start of date range
+   * @param endDate
+   *          End of date range
+   * @param country
+   *          Country's name
+   * @param actor1
+   *          One actor's name
+   * @param actor2
+   *          The other actor's name
+   * @param lowEnd
+   *          Low end number of fatalities
+   * @param highEnd
+   *          High end number of fatalities
+   * @return A list of all conflicts that meet the specified criteria. Empty
+   *         list if none or if any constraints are violated.
+   */
+  public List<Conflict> getConflictsByCriteria(Date startDate, Date endDate,
+    String country, String actor1, String actor2, Integer lowEnd,
+    Integer highEnd);
+
+  /**
    * Get all countries associated with conflicts
    * 
    * @return A list of all countries associated with conflicts

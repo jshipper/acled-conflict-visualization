@@ -150,6 +150,49 @@ public class ConflictResource {
   }
 
   @GET
+  @Path("/getConflictsByCriteria")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Transactional
+  public Response getConflictsByCriteria(
+    @QueryParam("startDate") String startDate,
+    @QueryParam("endDate") String endDate,
+    @QueryParam("country") String country, @QueryParam("actor1") String actor1,
+    @QueryParam("actor2") String actor2, @QueryParam("lowEnd") Integer lowEnd,
+    @QueryParam("highEnd") Integer highEnd) {
+    DateFormat dateFormat = new SimpleDateFormat(Conflict.DATE_FORMAT);
+    Date d1 = null;
+    if (startDate != null) {
+      try {
+        d1 = dateFormat.parse(startDate);
+      } catch (ParseException e) {
+        return Response.status(Status.BAD_REQUEST)
+          .entity("Start date not in expected format: " + Conflict.DATE_FORMAT)
+          .build();
+      }
+    }
+    Date d2 = null;
+    if (endDate != null) {
+      try {
+        d2 = dateFormat.parse(endDate);
+      } catch (ParseException e) {
+        return Response.status(Status.BAD_REQUEST)
+          .entity("End date not in expected format: " + Conflict.DATE_FORMAT)
+          .build();
+      }
+      if (d1 != null && d2 != null && d2.before(d1)) {
+        return Response.status(Status.BAD_REQUEST)
+          .entity("End date should be after start date").build();
+      }
+    }
+    if (lowEnd != null && highEnd != null && lowEnd > highEnd) {
+      return Response.status(Status.BAD_REQUEST)
+        .entity("High end should be greater than low end").build();
+    }
+    return Response.ok(conflictService.getConflictsByCriteria(d1, d2, country,
+      actor1, actor2, lowEnd, highEnd)).build();
+  }
+
+  @GET
   @Path("/getAllCountries")
   @Produces(MediaType.APPLICATION_JSON)
   @Transactional

@@ -68,6 +68,14 @@ public class ConflictServiceImpl implements ConflictService {
   }
 
   @Override
+  public List<Conflict> getConflictsByCriteria(Date startDate, Date endDate,
+    String country, String actor1, String actor2, Integer lowEnd,
+    Integer highEnd) {
+    return dao.getConflictsByCriteria(startDate, endDate, country, actor1,
+      actor2, lowEnd, highEnd);
+  }
+
+  @Override
   public List<String> getAllCountries() {
     return dao.getAllCountries();
   }
@@ -86,5 +94,4 @@ public class ConflictServiceImpl implements ConflictService {
   public void deleteAll() {
     dao.deleteAll();
   }
-
 }
