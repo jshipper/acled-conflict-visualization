@@ -27,6 +27,6 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>ConflictResource</servlet-name>
-    <url-pattern>/*</url-pattern>
+    <url-pattern>/acled/*</url-pattern>
   </servlet-mapping>
 </web-app>
