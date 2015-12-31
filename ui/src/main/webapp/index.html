@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>ACLED v5 (1997-2014) Conflict Dataset Visualization</title>
+</head>
+<body>
+  <script src="js/d3.min.js"></script>
+  <script src="js/topojson.js"></script>
+  <script src="js/datamaps.world.min.js"></script>
+  <div id="header"><h1 style="text-align:center">ACLED v5 (1997-2014) Conflict Dataset Visualization</h1></div>
+  <div id="container"
+    style="position: relative; margin: 0 auto; height: 975px; width: 900px;"></div>
+  <script>
+    var zoom =
+      new Datamap({
+        element : document.getElementById("container"),
+        scope : 'world',
+        // Zoom in on Africa
+        setProjection : function(element) {
+          var projection =
+            d3.geo.mercator().center([ 23, 2 ]).rotate([ 4.4, 0 ])
+              .scale(725).translate(
+                 [ element.offsetWidth / 2, element.offsetHeight / 2 ]);
+          var path = d3.geo.path().projection(projection);
+
+          return {
+            path : path,
+            projection : projection
+          };
+        }
+      });
+  </script>
+</body>
+</html>

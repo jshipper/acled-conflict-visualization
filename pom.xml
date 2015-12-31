@@ -29,6 +29,11 @@
         <artifactId>acled-data-visualization-dao</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>acled-data-visualization-rest-services</artifactId>
+        <version>${project.version}</version>
+      </dependency>
       <!-- Javax -->
       <dependency>
         <groupId>javax.inject</groupId>
