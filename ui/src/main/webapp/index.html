@@ -10,12 +10,16 @@
   <script src="js/datamaps.world.min.js"></script>
   <div id="header"><h1 style="text-align:center">ACLED v5 (1997-2014) Conflict Dataset Visualization</h1></div>
   <div id="container"
-    style="position: relative; margin: 0 auto; height: 975px; width: 900px;"></div>
+    style="position: relative; margin: 0 auto; height: 1025px; width: 950px;"></div>
   <script>
-    var zoom =
+    var map =
       new Datamap({
         element : document.getElementById("container"),
         scope : 'world',
+        fills: {
+          bubble: 'red',
+          defaultFill: '#ABDDA4'
+        },
         // Zoom in on Africa
         setProjection : function(element) {
           var projection =
@@ -30,6 +34,22 @@
           };
         }
       });
+    d3.json('acled/conflict/getConflictsByCriteria?startDate=2014-01-01&lowEnd=1', function(error, conflicts) {
+      for (var i = 0; i < conflicts.length; i++) {
+        conflicts[i].radius = Math.min(Math.max(4, conflicts[i].fatalities / 7), 60);
+        conflicts[i].fillKey = 'bubble';
+      }
+      map.bubbles(conflicts, {
+        popupTemplate: function (geo, data) {
+          return ['<div class="hoverinfo">Fatalities: ' +  data.fatalities,
+                  '<br/>Date: ' +  data.date + '',
+                  '<br/>Location: ' +  data.location + '',
+                  '<br/>Actor 1: ' +  data.actor1 + '',
+                  '<br/>Actor 2: ' +  data.actor2 + '',
+                  '</div>'].join('');
+        }
+      });
+    });
   </script>
 </body>
 </html>
