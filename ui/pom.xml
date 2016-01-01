@@ -16,4 +16,12 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
       <artifactId>acled-data-visualization-rest-services</artifactId>
     </dependency>
   </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
 </project>
