@@ -5,13 +5,26 @@
 <title>ACLED v5 (1997-2014) Conflict Dataset Visualization</title>
 </head>
 <body>
+  <script src="js/angular.min.js"></script>
   <script src="js/d3.min.js"></script>
   <script src="js/topojson.js"></script>
   <script src="js/datamaps.world.min.js"></script>
   <div id="header"><h1 style="text-align:center">ACLED v5 (1997-2014) Conflict Dataset Visualization</h1></div>
   <div id="container"
-    style="position: relative; margin: 0 auto; height: 1025px; width: 950px;"></div>
+    style="position: relative; margin: 0 auto; height: 875px; width: 800px;"></div>
+  <div id="filters" style="text-align:center" ng-app="conflictsApp" ng-controller="ConflictsController as conflictsCtrl">
+    <span id="startDateField"><label>Start Date:</label><input type="text" ng-model="startDate" size=6></span>
+    <span id="endDateField"><label>End Date:</label><input type="text" ng-model="endDate" size=6></span>
+    <span id="countryField"><label>Country:</label><select ng-model="countrySelect" ng-options="country for country in countries" style="width: 100px"></select></span>
+    <span id="actor1Field"><label>Actor 1:</label><select ng-model="actor1Select" ng-options="actor for actor in actors" style="width: 100px"></select></span>
+    <span id="actor2Field"><label>Actor 2:</label><select ng-model="actor2Select" ng-options="actor for actor in actors" style="width: 100px"></select></span>
+    <span id="lowEndField"><label>Low End Number of Fatalities:</label><input type="text" ng-model="lowEnd" size=1></span>
+    <span id="highEndField"><label>High End Number of Fatalities:</label><input type="text" ng-model="highEnd" size=1></span>
+    <span><button type="button" ng-click="conflictsCtrl.applyFilters()">Apply Filters</button></span>
+    <span><button type="button" ng-click="conflictsCtrl.resetFilters()">Reset Filters</button></span>
+  </div>
   <script>
+    // Create map
     var map =
       new Datamap({
         element : document.getElementById("container"),
@@ -24,7 +37,7 @@
         setProjection : function(element) {
           var projection =
             d3.geo.mercator().center([ 23, 2 ]).rotate([ 4.4, 0 ])
-              .scale(725).translate(
+              .scale(625).translate(
                  [ element.offsetWidth / 2, element.offsetHeight / 2 ]);
           var path = d3.geo.path().projection(projection);
 
@@ -34,21 +47,90 @@
           };
         }
       });
-    d3.json('acled/conflict/getConflictsByCriteria?startDate=2014-01-01&lowEnd=1', function(error, conflicts) {
-      for (var i = 0; i < conflicts.length; i++) {
-        conflicts[i].radius = Math.min(Math.max(4, conflicts[i].fatalities / 7), 60);
-        conflicts[i].fillKey = 'bubble';
-      }
-      map.bubbles(conflicts, {
-        popupTemplate: function (geo, data) {
-          return ['<div class="hoverinfo">Fatalities: ' +  data.fatalities,
-                  '<br/>Date: ' +  data.date + '',
-                  '<br/>Location: ' +  data.location + '',
-                  '<br/>Actor 1: ' +  data.actor1 + '',
-                  '<br/>Actor 2: ' +  data.actor2 + '',
-                  '</div>'].join('');
+
+    // Set up Angular controller
+    var conflictsApp = angular.module('conflictsApp', []);
+    conflictsApp.controller('ConflictsController', function($scope, $http) {
+      // Populate countries dropdown
+      $http.get("acled/conflict/getAllCountries").then(
+        function(response) {
+          $scope.countries = response.data;
         }
-      });
+      );
+
+      // Populate actors dropdowns
+      $http.get("acled/conflict/getAllActors").then(
+        function(response) {
+          var actors = response.data.sort();
+          // Remove top element (blank)
+          actors.splice(0, 1);
+          $scope.actors = actors;
+        }
+      );
+
+      // Function for filtering data shown on page
+      this.applyFilters = function() {
+        var filterParams = {};
+        if ($scope.startDate) {
+          filterParams.startDate = $scope.startDate;
+        }
+        if ($scope.endDate) {
+          filterParams.endDate = $scope.endDate;
+        }
+        if ($scope.countrySelect) {
+          filterParams.country = $scope.countrySelect;
+        }
+        if ($scope.actor1Select) {
+          filterParams.actor1 = $scope.actor1Select;
+        }
+        if ($scope.actor2Select) {
+          filterParams.actor2 = $scope.actor2Select;
+        }
+        if ($scope.lowEnd) {
+          filterParams.lowEnd = $scope.lowEnd;
+        }
+        if ($scope.highEnd) {
+          filterParams.highEnd = $scope.highEnd;
+        }
+        $http({method: "GET", url: "acled/conflict/getConflictsByCriteria", params: filterParams}).then(
+          function success(response) {
+            var conflicts = response.data;
+            for (var i = 0; i < conflicts.length; i++) {
+              conflicts[i].radius = Math.min(Math.max(4, conflicts[i].fatalities / 7), 60);
+              conflicts[i].fillKey = 'bubble';
+            }
+            map.bubbles(conflicts, {
+              popupTemplate: function (geo, data) {
+                return ['<div class="hoverinfo">Fatalities: ' +  data.fatalities,
+                        '<br/>Date: ' +  data.date + '',
+                        '<br/>Location: ' +  data.location + '',
+                        '<br/>Actor 1: ' +  data.actor1 + '',
+                        '<br/>Actor 2: ' +  data.actor2 + '',
+                        '</div>'].join('');
+              }
+            });
+          }, function error(response) {
+            // TODO: response.data is undefined?
+            console.log(response.data);
+          });
+      };
+
+      // Function for resetting filters
+      this.resetFilters = function() {
+        $scope.startDate = '';
+        $scope.endDate = '';
+        $scope.countrySelect = '';
+        $scope.actor1Select = '';
+        $scope.actor2Select = '';
+        $scope.lowEnd = '';
+        $scope.highEnd = '';
+      };
+
+      // Initial load of data for page
+      $scope.startDate = '2014-01-01';
+      $scope.endDate = '2014-12-31';
+      $scope.lowEnd = 1;
+      this.applyFilters();
     });
   </script>
 </body>
