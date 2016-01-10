@@ -11,13 +11,15 @@
 * Download the dataset
   * Download ZIP file: [ACLED v5 ZIP](http://www.acleddata.com/wp-content/uploads/2015/06/ACLED-Version-5-All-Africa-1997-2014_dyadic_Updated_csv-no-notes.zip)
   * Extract ZIP file to get the CSV
-  * Remove first 2 columns from CSV file
+  * Replace carriage returns with new line characters: `sed 's/\r/\n/g' ACLED-Version-5-All-Africa-1997-2014_dyadic_Updated_no_notes.csv > ACLED-Version-5-All-Africa-1997-2014_dyadic_Updated_no_notes-modified.csv` 
 * Set up MySQL
   * Create database: `CREATE DATABASE acled;`
   * Create table
   ```sql
   USE acled;
   CREATE TABLE Conflict (
+    GWNO INTEGER,
+    EVENT_ID_CNTY VARCHAR(256),
     EVENT_ID_NO_CNTY BIGINT PRIMARY KEY,
     EVENT_DATE DATE,
     YEAR INTEGER,
@@ -44,12 +46,14 @@
   ```
   * Load data into table
   ```sql
-  LOAD DATA LOCAL INFILE '/path/to/csv/ACLED-Version-5-All-Africa-1997-2014_dyadic_Updated_no_notes.csv'
+  LOAD DATA LOCAL INFILE '/path/to/csv/ACLED-Version-5-All-Africa-1997-2014_dyadic_Updated_no_notes-modified.csv'
   INTO TABLE Conflict
   FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\'
   LINES TERMINATED BY '\n' STARTING BY ''
   IGNORE 1 LINES
   (
+    GWNO,
+    EVENT_ID_CNTY,
     EVENT_ID_NO_CNTY,
     @EVENT_DATE,
     YEAR,
