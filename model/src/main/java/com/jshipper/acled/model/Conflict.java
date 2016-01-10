@@ -16,8 +16,7 @@ import javax.persistence.TemporalType;
 import javax.persistence.UniqueConstraint;
 
 /**
- * POJO representing the ACLED dataset, without the first 2 columns (GWNO,
- * EVENT_ID_CNTY)
+ * POJO representing the ACLED dataset
  * 
  * @author jshipper
  *
@@ -82,7 +81,7 @@ public class Conflict implements Serializable {
   public static final String ALL_ACTOR1S_QUERY = "getAllActor1s";
   public static final String ALL_ACTOR2S_QUERY = "getAllActor2s";
   public static final String DATE_FORMAT = "yyyy-MM-dd";
-  private static final long serialVersionUID = -752272337227549569L;
+  private static final long serialVersionUID = 6010815673597700212L;
 
   @Id
   @Column(name = "EVENT_ID_NO_CNTY")
@@ -151,6 +150,12 @@ public class Conflict implements Serializable {
 
   @Column(name = "FATALITIES")
   private Integer fatalities;
+
+  @Column(name = "GWNO")
+  private Integer gwno;
+
+  @Column(name = "EVENT_ID_CNTY")
+  private String eventIdCnty;
 
   public Long getId() {
     return id;
@@ -328,6 +333,22 @@ public class Conflict implements Serializable {
     this.fatalities = fatalities;
   }
 
+  public Integer getGwno() {
+    return gwno;
+  }
+
+  public void setGwno(Integer gwno) {
+    this.gwno = gwno;
+  }
+
+  public String getEventIdCnty() {
+    return eventIdCnty;
+  }
+
+  public void setEventIdCnty(String eventIdCnty) {
+    this.eventIdCnty = eventIdCnty;
+  }
+
   @Override
   public String toString() {
     StringBuilder builder = new StringBuilder();
@@ -375,6 +396,10 @@ public class Conflict implements Serializable {
     builder.append(source);
     builder.append(", fatalities=");
     builder.append(fatalities);
+    builder.append(", gwno=");
+    builder.append(gwno);
+    builder.append(", eventIdCnty=");
+    builder.append(eventIdCnty);
     builder.append("]");
     return builder.toString();
   }
@@ -394,10 +419,13 @@ public class Conflict implements Serializable {
       prime * result + ((allyActor2 == null) ? 0 : allyActor2.hashCode());
     result = prime * result + ((country == null) ? 0 : country.hashCode());
     result = prime * result + ((date == null) ? 0 : date.hashCode());
+    result =
+      prime * result + ((eventIdCnty == null) ? 0 : eventIdCnty.hashCode());
     result = prime * result + ((eventType == null) ? 0 : eventType.hashCode());
     result =
       prime * result + ((fatalities == null) ? 0 : fatalities.hashCode());
     result = prime * result + ((geoPrecis == null) ? 0 : geoPrecis.hashCode());
+    result = prime * result + ((gwno == null) ? 0 : gwno.hashCode());
     result = prime * result + ((inter1 == null) ? 0 : inter1.hashCode());
     result = prime * result + ((inter2 == null) ? 0 : inter2.hashCode());
     result =
@@ -481,6 +509,11 @@ public class Conflict implements Serializable {
         return false;
     } else if (!eventType.equals(other.eventType))
       return false;
+    if (eventIdCnty == null) {
+      if (other.eventIdCnty != null)
+        return false;
+    } else if (!eventIdCnty.equals(other.eventIdCnty))
+      return false;
     if (fatalities == null) {
       if (other.fatalities != null)
         return false;
@@ -490,6 +523,11 @@ public class Conflict implements Serializable {
       if (other.geoPrecis != null)
         return false;
     } else if (!geoPrecis.equals(other.geoPrecis))
+      return false;
+    if (gwno == null) {
+      if (other.gwno != null)
+        return false;
+    } else if (!gwno.equals(other.gwno))
       return false;
     if (inter1 == null) {
       if (other.inter1 != null)
