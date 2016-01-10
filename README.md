@@ -45,6 +45,7 @@
   );
   ```
   * Load data into table
+    * NOTE: If you get an error with the below, you probably need to enable local file loading in your MySQL instance.  This can be done by adding `--local-infile=1` when starting your MySQL client.  More details here: http://dev.mysql.com/doc/refman/5.7/en/load-data-local.html
   ```sql
   LOAD DATA LOCAL INFILE '/path/to/csv/ACLED-Version-5-All-Africa-1997-2014_dyadic_Updated_no_notes-modified.csv'
   INTO TABLE Conflict
