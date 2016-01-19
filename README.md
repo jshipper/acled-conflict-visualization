@@ -83,7 +83,7 @@
   * Create test database: `CREATE DATABASE test;`
 
 ## Usage
-* Change the values in `rest-services/src/main/resources/app.properties` and `rest-services/src/test/resources/test-app.properties` to connect to your MySQL instance
+* Change the values in `dao/src/test/resources/test-app.properties`, `rest-services/src/main/resources/app.properties`, and `rest-services/src/test/resources/test-app.properties` to connect to your MySQL instance
 * Build the project with `mvn clean install` in the project's root directory
 * Change to the UI directory and start jetty with `mvn jetty:run`
 * Access the webapp at localhost:8080

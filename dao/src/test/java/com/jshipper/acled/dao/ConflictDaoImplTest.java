@@ -3,6 +3,7 @@ package com.jshipper.acled.dao;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -18,7 +19,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.jshipper.acled.dao.ConflictDaoImpl;
 import com.jshipper.acled.model.Conflict;
 
 public class ConflictDaoImplTest {
@@ -52,7 +52,7 @@ public class ConflictDaoImplTest {
   }
 
   @BeforeClass
-  public static void setup() {
+  public static void setup() throws IOException {
     sessionFactory = getSessionFactory();
   }
 
@@ -61,22 +61,11 @@ public class ConflictDaoImplTest {
     sessionFactory.close();
   }
 
-  public static SessionFactory getSessionFactory() {
+  public static SessionFactory getSessionFactory() throws IOException {
     Configuration config = new Configuration();
     Properties props = new Properties();
-    // Hibernate properties
-    props.put("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
-    props.put("hibernate.hbm2ddl.auto", "create");
-    props.put("hibernate.current_session_context_class",
-      "org.hibernate.context.internal.ThreadLocalSessionContext");
-    // Connection properties
-    props.put("hibernate.connection.username", "root");
-    props.put("hibernate.connection.password", "mysqlnotsecure");
-    props.put("hibernate.connection.driver_class", "com.mysql.jdbc.Driver");
-    props.put("hibernate.connection.url", "jdbc:mysql://localhost/test");
-    // Debugging properties
-    props.put("hibernate.show_sql", "true");
-    props.put("hibernate.format_sql", "true");
+    props.load(
+      ConflictDaoImplTest.class.getResourceAsStream("/test-app.properties"));
     config.addPackage("com.jshipper.acled.model").setProperties(props)
       .addAnnotatedClass(Conflict.class);
     return config.buildSessionFactory(
