@@ -19,24 +19,24 @@
   <div id="container"
     style="position: relative; margin: 0 auto; height: 875px; width: 800px;"></div>
   <div id="filters" style="text-align:center" ng-app="conflictsApp" ng-controller="ConflictsController as conflictsCtrl">
-    <div class="dropdown">
+    <span class="dropup">
       <a class="dropdown-toggle" id="startDateDropdown" role="button" data-toggle="dropdown" data-target="#" href="#">
-        <span class="input-group"><label>Start Date:</label><input type="text" data-ng-model="startDate" size=7>
+        <span><label>Start Date:</label><input type="text" data-ng-model="startDate" size=7>
         </span>
       </a>
       <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
         <datetimepicker data-ng-model="startDate" data-datetimepicker-config="{ dropdownSelector: '#startDateDropdown', startView:'day', minView:'day' }"/>
       </ul>
-    </div>
-    <div class="dropdown">
+    </span>
+    <span class="dropup">
       <a class="dropdown-toggle" id="endDateDropdown" role="button" data-toggle="dropdown" data-target="#" href="#">
-        <span class="input-group"><label>End Date:</label><input type="text" data-ng-model="endDate" size=7>
+        <span><label>End Date:</label><input type="text" data-ng-model="endDate" size=7>
         </span>
       </a>
       <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
         <datetimepicker data-ng-model="endDate" data-datetimepicker-config="{ dropdownSelector: '#endDateDropdown', startView:'day', minView:'day' }"/>
       </ul>
-    </div>
+    </span>
     <span id="countryField"><label>Country:</label><select ng-model="countrySelect" ng-options="country for country in countries" ng-change="conflictsCtrl.updateActors()" style="width: 100px"></select></span>
     <span id="actor1Field"><label>Actor 1:</label><select ng-model="actor1Select" ng-options="actor for actor in actors" style="width: 100px"></select></span>
     <span id="actor2Field"><label>Actor 2:</label><select ng-model="actor2Select" ng-options="actor for actor in actors" style="width: 100px"></select></span>
