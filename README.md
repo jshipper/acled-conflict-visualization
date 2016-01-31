@@ -6,8 +6,8 @@
 * Docker (tested with Docker 1.9.1 on Ubuntu 14.04.3 host)
 
 ### Setup
-* `docker pull jshipper/acled-conflict-visualization`
-* `docker run -d -p 8080 jshipper/acled-conflict-visualization /bin/bash -c "service mysql start; cd /opt/acled-conflict-visualization/ui/; mvn jetty:run"`
+* Pull the current Docker image: `docker pull jshipper/acled-conflict-visualization`
+* Start the container: `docker run -d -p 8080 jshipper/acled-conflict-visualization /bin/bash -c "service mysql start; cd /opt/acled-conflict-visualization/ui/; mvn jetty:run"`
 
 ### Usage
 * Get the port to which the container's 8080 port is mapped: `docker ps -l`
