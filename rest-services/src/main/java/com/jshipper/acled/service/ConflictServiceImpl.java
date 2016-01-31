@@ -86,6 +86,11 @@ public class ConflictServiceImpl implements ConflictService {
   }
 
   @Override
+  public List<String> getActorsByCountry(String country) {
+    return dao.getActorsByCountry(country);
+  }
+
+  @Override
   public void saveAll(Collection<Conflict> conflicts) {
     dao.saveAll(conflicts);
   }

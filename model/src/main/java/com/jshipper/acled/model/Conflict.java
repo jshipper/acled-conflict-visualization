@@ -61,6 +61,12 @@ import javax.persistence.UniqueConstraint;
     query = "SELECT DISTINCT c.country FROM " + Conflict.TABLE_NAME + " c"),
   @NamedQuery(name = Conflict.ALL_ACTOR1S_QUERY,
     query = "SELECT DISTINCT c.actor1 FROM " + Conflict.TABLE_NAME + " c"),
+  @NamedQuery(name = Conflict.ACTOR1S_BY_COUNTRY_QUERY,
+    query = "SELECT DISTINCT c.actor1 FROM " + Conflict.TABLE_NAME + " c "
+      + "WHERE lower(c.country) = lower(:country)"),
+  @NamedQuery(name = Conflict.ACTOR2S_BY_COUNTRY_QUERY,
+    query = "SELECT DISTINCT c.actor2 FROM " + Conflict.TABLE_NAME + " c "
+      + "WHERE lower(c.country) = lower(:country)"),
   @NamedQuery(name = Conflict.ALL_ACTOR2S_QUERY,
     query = "SELECT DISTINCT c.actor2 FROM " + Conflict.TABLE_NAME + " c") })
 @Table(name = Conflict.TABLE_NAME,
@@ -80,6 +86,8 @@ public class Conflict implements Serializable {
   public static final String ALL_COUNTRIES_QUERY = "getAllCountries";
   public static final String ALL_ACTOR1S_QUERY = "getAllActor1s";
   public static final String ALL_ACTOR2S_QUERY = "getAllActor2s";
+  public static final String ACTOR1S_BY_COUNTRY_QUERY = "getActor1sByCountry";
+  public static final String ACTOR2S_BY_COUNTRY_QUERY = "getActor2sByCountry";
   public static final String DATE_FORMAT = "yyyy-MM-dd";
   private static final long serialVersionUID = 6010815673597700212L;
 
