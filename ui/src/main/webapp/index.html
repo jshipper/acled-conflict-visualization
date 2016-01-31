@@ -15,7 +15,7 @@
   <div id="filters" style="text-align:center" ng-app="conflictsApp" ng-controller="ConflictsController as conflictsCtrl">
     <span id="startDateField"><label>Start Date:</label><input type="text" ng-model="startDate" size=6></span>
     <span id="endDateField"><label>End Date:</label><input type="text" ng-model="endDate" size=6></span>
-    <span id="countryField"><label>Country:</label><select ng-model="countrySelect" ng-options="country for country in countries" style="width: 100px"></select></span>
+    <span id="countryField"><label>Country:</label><select ng-model="countrySelect" ng-options="country for country in countries" ng-change="conflictsCtrl.updateActors()" style="width: 100px"></select></span>
     <span id="actor1Field"><label>Actor 1:</label><select ng-model="actor1Select" ng-options="actor for actor in actors" style="width: 100px"></select></span>
     <span id="actor2Field"><label>Actor 2:</label><select ng-model="actor2Select" ng-options="actor for actor in actors" style="width: 100px"></select></span>
     <span id="lowEndField"><label>Low End Number of Fatalities:</label><input type="text" ng-model="lowEnd" size=1></span>
@@ -66,14 +66,18 @@
       );
 
       // Populate actors dropdowns
-      $http.get("acled/conflict/getAllActors").then(
-        function(response) {
-          var actors = response.data.sort();
-          // Remove top element (blank)
-          actors.splice(0, 1);
-          $scope.actors = actors;
-        }
-      );
+      this.loadActors = function() {
+        // Populate actors dropdowns
+        $http.get("acled/conflict/getAllActors").then(
+          function(response) {
+            var actors = response.data.sort();
+            // Remove top element (blank)
+            actors.splice(0, 1);
+            $scope.actors = actors;
+          }
+        );
+      };
+      this.loadActors();
 
       // Function for filtering data shown on page
       this.applyFilters = function() {
@@ -122,6 +126,23 @@
           });
       };
 
+      // Function for updating actors based on country selected
+      this.updateActors = function() {
+        var country = $scope.countrySelect;
+        // Reset actors dropdowns if no country selected
+        if (!country) {
+          this.loadActors();
+        }
+        $http.get("acled/conflict/getActorsByCountry/" + country).then(
+          function(response) {
+            var actors = response.data.sort();
+            // Remove top element (blank)
+            actors.splice(0, 1);
+            $scope.actors = actors;
+          }
+        );
+      };
+
       // Function for resetting filters
       this.resetFilters = function() {
         $scope.startDate = '';
@@ -131,6 +152,7 @@
         $scope.actor2Select = '';
         $scope.lowEnd = '';
         $scope.highEnd = '';
+        this.loadActors();
       };
 
       // Initial load of data for page
