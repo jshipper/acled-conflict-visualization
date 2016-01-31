@@ -181,6 +181,27 @@ public class ConflictDaoImpl implements ConflictDao {
     return actors;
   }
 
+  @SuppressWarnings("unchecked")
+  @Override
+  public List<String> getActorsByCountry(String country) {
+    // TODO: Case insensitive building of list
+    Session session = sessionFactory.getCurrentSession();
+    Query queryActor1s =
+      session.getNamedQuery(Conflict.ACTOR1S_BY_COUNTRY_QUERY);
+    queryActor1s.setString("country", country);
+    List<String> actors = queryActor1s.list();
+    Query queryActor2s =
+      session.getNamedQuery(Conflict.ACTOR2S_BY_COUNTRY_QUERY);
+    queryActor2s.setString("country", country);
+    List<String> actor2s = queryActor2s.list();
+    for (String actor : actor2s) {
+      if (!actors.contains(actor)) {
+        actors.add(actor);
+      }
+    }
+    return actors;
+  }
+
   @Override
   public void saveAll(Collection<Conflict> conflicts) {
     Session session = sessionFactory.getCurrentSession();

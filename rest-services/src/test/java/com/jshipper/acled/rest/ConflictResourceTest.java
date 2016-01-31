@@ -723,4 +723,27 @@ public class ConflictResourceTest extends JerseyTest {
       assertEquals("Actor " + i, retrievedActors.get(i));
     }
   }
+
+  @Test
+  public void testGetActorsByCountry() {
+    JsonNode jsonResponse =
+      target(ConflictResource.PATH + "/getActorsByCountry/Country 0").request()
+        .get(JsonNode.class);
+    List<String> retrievedActors =
+      mapper.convertValue(jsonResponse, new TypeReference<List<String>>() {
+      });
+    assertEquals(2, retrievedActors.size());
+    assertTrue(retrievedActors.contains("Actor 0"));
+    assertTrue(retrievedActors.contains("Actor 1"));
+    jsonResponse =
+      target(ConflictResource.PATH + "/getActorsByCountry/counTry 0").request()
+        .get(JsonNode.class);
+    List<Conflict> retrievedActors2 =
+      mapper.convertValue(jsonResponse, new TypeReference<List<String>>() {
+      });
+    assertEquals(2, retrievedActors2.size());
+    assertTrue(retrievedActors2.contains("Actor 0"));
+    assertTrue(retrievedActors2.contains("Actor 1"));
+    assertEquals(retrievedActors, retrievedActors2);
+  }
 }

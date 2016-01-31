@@ -207,4 +207,12 @@ public class ConflictResource {
   public Response getAllActors() {
     return Response.ok(conflictService.getAllActors()).build();
   }
+
+  @GET
+  @Path("/getActorsByCountry/{country}")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Transactional
+  public Response getActorsByCountry(@PathParam("country") String country) {
+    return Response.ok(conflictService.getActorsByCountry(country)).build();
+  }
 }

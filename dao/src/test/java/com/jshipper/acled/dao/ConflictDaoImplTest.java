@@ -593,4 +593,14 @@ public class ConflictDaoImplTest {
       assertEquals("Actor " + i, retrievedActors.get(i));
     }
   }
+
+  @Test
+  public void testGetActorsByCountry() {
+    Transaction tx = sessionFactory.getCurrentSession().beginTransaction();
+    List<String> retrievedActors = dao.getActorsByCountry("Country 0");
+    tx.commit();
+    assertEquals(2, retrievedActors.size());
+    assertTrue(retrievedActors.contains("Actor 0"));
+    assertTrue(retrievedActors.contains("Actor 1"));
+  }
 }

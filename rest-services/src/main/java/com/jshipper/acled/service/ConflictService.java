@@ -138,6 +138,15 @@ public interface ConflictService {
   public List<String> getAllActors();
 
   /**
+   * Get the actors associated with a given country
+   * 
+   * @param country
+   *          Country's name
+   * @return A list of all actors associated with the given actor
+   */
+  public List<String> getActorsByCountry(String country);
+
+  /**
    * Save all conflicts
    * 
    * @param conflicts

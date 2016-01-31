@@ -484,4 +484,14 @@ public class ConflictServiceImplTest {
       assertEquals("Actor " + i, retrievedActors.get(i));
     }
   }
+
+  @Test
+  public void testGetActorsByCountry() {
+    ConflictService conflictService = context.getBean(ConflictService.class);
+    List<String> retrievedActors =
+      conflictService.getActorsByCountry("Country 0");
+    assertEquals(2, retrievedActors.size());
+    assertTrue(retrievedActors.contains("Actor 0"));
+    assertTrue(retrievedActors.contains("Actor 1"));
+  }
 }
