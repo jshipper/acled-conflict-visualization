@@ -1,12 +1,29 @@
 # ACLED v5 (1997-2014) Conflict Dataset Visualization
 
-## Requirements
+## Setup with Docker
+
+### Requirements
+* Docker (tested with Docker 1.9.1 on Ubuntu 14.04.3 host)
+
+### Setup
+* `docker pull jshipper/acled-conflict-visualization`
+* `docker run -d -p 8080 jshipper/acled-conflict-visualization /bin/bash -c "service mysql start; cd /opt/acled-conflict-visualization/ui/; mvn jetty:run"`
+
+### Usage
+* Get the port to which the container's 8080 port is mapped: `docker ps -l`
+* Access the webapp at `localhost:<docker_port>`
+  * If running this in a VM, you can use port forwarding to access the UI from your host machine
+
+
+##  Setup without Docker
+
+### Requirements
 * Java 8
 * Maven 3 (tested with 3.3)
 * MySQL 5 (tested with 5.7.10)
 * Git
 
-## Setup
+### Setup
 * Clone the git repo: `git clone https://github.com/jshipper/acled-conflict-visualization.git`
 * Download the dataset
   * Download ZIP file: [ACLED v5 ZIP](http://www.acleddata.com/wp-content/uploads/2015/06/ACLED-Version-5-All-Africa-1997-2014_dyadic_Updated_csv-no-notes.zip)
@@ -82,9 +99,9 @@
   ```
   * Create test database: `CREATE DATABASE test;`
 
-## Usage
+### Usage
 * Change the values in `dao/src/test/resources/test-app.properties`, `rest-services/src/main/resources/app.properties`, and `rest-services/src/test/resources/test-app.properties` to connect to your MySQL instance
 * Build the project with `mvn clean install` in the project's root directory
 * Change to the UI directory and start jetty with `mvn jetty:run`
-* Access the webapp at localhost:8080
+* Access the webapp at `localhost:8080`
   * If running this in a VM, you can use port forwarding to access the UI from your host machine
