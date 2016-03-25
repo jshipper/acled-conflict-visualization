@@ -27,8 +27,7 @@
 * Clone the git repo: `git clone https://github.com/jshipper/acled-conflict-visualization.git`
 * Download the dataset
   * Download ZIP file: [ACLED v5 ZIP](http://www.acleddata.com/wp-content/uploads/2015/06/ACLED-Version-5-All-Africa-1997-2014_dyadic_Updated_csv-no-notes.zip)
-  * Extract ZIP file to get the CSV
-  * Replace carriage returns with new line characters: `sed 's/\r/\n/g' ACLED-Version-5-All-Africa-1997-2014_dyadic_Updated_no_notes.csv > ACLED-Version-5-All-Africa-1997-2014_dyadic_Updated_no_notes-modified.csv` 
+  * Extract ZIP file to get the CSV 
 * Set up MySQL
   * Create database: `CREATE DATABASE acled;`
   * Create table
@@ -64,10 +63,10 @@
   * Load data into table
     * NOTE: If you get an error with the below, you probably need to enable local file loading in your MySQL instance.  This can be done by adding `--local-infile=1` when starting your MySQL client.  More details here: http://dev.mysql.com/doc/refman/5.7/en/load-data-local.html
   ```sql
-  LOAD DATA LOCAL INFILE '/path/to/csv/ACLED-Version-5-All-Africa-1997-2014_dyadic_Updated_no_notes-modified.csv'
+  LOAD DATA LOCAL INFILE '/path/to/csv/ACLED-Version-5-All-Africa-1997-2014_dyadic_Updated_no_notes.csv'
   INTO TABLE Conflict
   FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\'
-  LINES TERMINATED BY '\n' STARTING BY ''
+  LINES TERMINATED BY '\r' STARTING BY ''
   IGNORE 1 LINES
   (
     GWNO,
