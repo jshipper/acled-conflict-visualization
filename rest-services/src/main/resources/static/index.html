@@ -81,7 +81,7 @@
     var conflictsApp = angular.module('conflictsApp', ['ui.bootstrap.datetimepicker']);
     conflictsApp.controller('ConflictsController', function($scope, $http, $filter) {
       // Populate countries dropdown
-      $http.get("acled/conflict/getAllCountries").then(
+      $http.get("conflict/getAllCountries").then(
         function(response) {
           $scope.countries = response.data;
         }
@@ -90,7 +90,7 @@
       // Populate actors dropdowns
       this.loadActors = function() {
         // Populate actors dropdowns
-        $http.get("acled/conflict/getAllActors").then(
+        $http.get("conflict/getAllActors").then(
           function(response) {
             var actors = response.data.sort();
             // Remove top element (blank)
@@ -125,7 +125,7 @@
         if ($scope.highEnd) {
           filterParams.highEnd = $scope.highEnd;
         }
-        $http({method: "GET", url: "acled/conflict/getConflictsByCriteria", params: filterParams}).then(
+        $http({method: "GET", url: "conflict/getConflictsByCriteria", params: filterParams}).then(
           function success(response) {
             var conflicts = response.data;
             for (var i = 0; i < conflicts.length; i++) {
@@ -155,7 +155,7 @@
         if (!country) {
           this.loadActors();
         }
-        $http.get("acled/conflict/getActorsByCountry/" + country).then(
+        $http.get("conflict/getActorsByCountry/" + country).then(
           function(response) {
             var actors = response.data.sort();
             // Remove top element (blank)

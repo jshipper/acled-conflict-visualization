@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  mysqldb:
+    container_name: mysqldb
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: mysqlnotsecure
+      MYSQL_DATABASE: acled
+    networks:
+      acled-mysql:
+    volumes:
+      - type: bind
+        source: C:/mysqldb-data
+        target: /var/lib/mysql
+
+  acled-webapp:
+    container_name: acled-webapp
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysqldb
+    networks:
+      acled-mysql:
+    restart: on-failure
+
+networks:
+  acled-mysql:

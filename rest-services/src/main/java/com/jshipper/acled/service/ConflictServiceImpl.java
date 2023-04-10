@@ -6,10 +6,10 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import org.springframework.transaction.annotation.Transactional;
+import com.jshipper.acled.dao.ConflictRepository;
 
-import com.jshipper.acled.dao.ConflictDao;
 import com.jshipper.acled.model.Conflict;
+import org.springframework.stereotype.Component;
 
 /**
  * Implementation of service to interface between ACLED DAO and REST services
@@ -17,62 +17,59 @@ import com.jshipper.acled.model.Conflict;
  * @author jshipper
  *
  */
-@Transactional
+@Component
 public class ConflictServiceImpl implements ConflictService {
-  private ConflictDao dao;
+  private ConflictRepository dao;
 
   @Inject
-  public ConflictServiceImpl(ConflictDao dao) {
+  public ConflictServiceImpl(ConflictRepository dao) {
     this.dao = dao;
   }
 
   @Override
   public List<Conflict> getAllConflicts() {
-    return dao.getAllConflicts();
+    return dao.findAll();
   }
 
   @Override
   public List<Conflict> getConflictsByDate(Date date) {
-    return dao.getConflictsByDate(date);
+    return dao.findByDate(date);
   }
 
   @Override
   public List<Conflict> getConflictsInDateRange(Date startDate, Date endDate) {
-    return dao.getConflictsInDateRange(startDate, endDate);
+    return dao.findByDateBetween(startDate, endDate);
   }
 
   @Override
   public List<Conflict> getConflictsByCountry(String country) {
-    return dao.getConflictsByCountry(country);
+    return dao.findByCountryIgnoreCase(country);
   }
 
   @Override
   public List<Conflict> getConflictsByActor(String actor) {
-    return dao.getConflictsByActor(actor);
+    return dao.findByActor(actor);
   }
 
   @Override
   public List<Conflict> getConflictsByActors(String actor1, String actor2) {
-    return dao.getConflictsByActors(actor1, actor2);
+    return dao.findByActors(actor1, actor2);
   }
 
   @Override
   public List<Conflict> getConflictsByFatalities(Integer fatalities) {
-    return dao.getConflictsByFatalities(fatalities);
+    return dao.findByFatalities(fatalities);
   }
 
   @Override
-  public List<Conflict> getConflictsInFatalityRange(Integer lowEnd,
-    Integer highEnd) {
-    return dao.getConflictsInFatalityRange(lowEnd, highEnd);
+  public List<Conflict> getConflictsInFatalityRange(Integer lowEnd, Integer highEnd) {
+    return dao.findByFatalitiesBetween(lowEnd, highEnd);
   }
 
   @Override
-  public List<Conflict> getConflictsByCriteria(Date startDate, Date endDate,
-    String country, String actor1, String actor2, Integer lowEnd,
-    Integer highEnd) {
-    return dao.getConflictsByCriteria(startDate, endDate, country, actor1,
-      actor2, lowEnd, highEnd);
+  public List<Conflict> getConflictsByCriteria(Date startDate, Date endDate, String country,
+                                               String actor1, String actor2, Integer lowEnd, Integer highEnd) {
+    return dao.findByCriteria(startDate, endDate, country, actor1, actor2, lowEnd, highEnd);
   }
 
   @Override

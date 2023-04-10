@@ -65,6 +65,7 @@
   ```sql
   LOAD DATA LOCAL INFILE '/path/to/csv/ACLED-Version-5-All-Africa-1997-2014_dyadic_Updated_no_notes.csv'
   INTO TABLE Conflict
+  CHARACTER SET latin1
   FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\'
   LINES TERMINATED BY '\r' STARTING BY ''
   IGNORE 1 LINES
