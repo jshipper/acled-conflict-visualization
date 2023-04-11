@@ -1,34 +1,22 @@
 # ACLED v5 (1997-2014) Conflict Dataset Visualization
 
-## Setup with Docker
+## Setup
 
 ### Requirements
-* Docker (tested with Docker 1.9.1 on Ubuntu 14.04.3 host)
+* Docker (tested with Docker 4.17 on Windows 11 host)
 
-### Setup
-* Pull the current Docker image: `docker pull jshipper/acled-conflict-visualization`
-* Start the container: `docker run -d -p 8080 jshipper/acled-conflict-visualization /bin/bash -c "service mysql start; cd /opt/acled-conflict-visualization/ui/; mvn jetty:run"`
-
-### Usage
-* Get the port to which the container's 8080 port is mapped: `docker ps -l`
-* Access the webapp at `localhost:<docker_port>`
-  * If running this in a VM, you can use port forwarding to access the UI from your host machine
-
-
-##  Setup without Docker
-
-### Requirements
-* Java 8
-* Maven 3 (tested with 3.3)
-* MySQL 5 (tested with 5.7.10)
-* Git
-
-### Setup
-* Clone the git repo: `git clone https://github.com/jshipper/acled-conflict-visualization.git`
+### First-time Setup
+* Initialize mysql: `docker run --name mysqldb --network acled-mysql -v C:/mysqldb-data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=mysqlnotsecure -d mysql:8`
+  * `C:/mysqldb-data` can be replaced with wherever you want to store your mysql DB files
+  * Set root password (`MYSQL_ROOT_PASSWORD`) as desired
 * Download the dataset
   * Download ZIP file: [ACLED v5 ZIP](http://www.acleddata.com/wp-content/uploads/2015/06/ACLED-Version-5-All-Africa-1997-2014_dyadic_Updated_csv-no-notes.zip)
-  * Extract ZIP file to get the CSV 
-* Set up MySQL
+    * Note: This URL is no longer active, contact me if you desire this dataset
+  * Extract ZIP file to get the CSV
+* Copy CSV dataset into your mysql DB directory
+* Once mysql is running, enter the shell: `docker exec -it mysqldb mysql -uroot -p --local-infile=1`
+* At mysql prompt:
+  * Enable local data loading: `set global local_infile = ON;`
   * Create database: `CREATE DATABASE acled;`
   * Create table
   ```sql
@@ -61,9 +49,8 @@
   );
   ```
   * Load data into table
-    * NOTE: If you get an error with the below, you probably need to enable local file loading in your MySQL instance.  This can be done by adding `--local-infile=1` when starting your MySQL client.  More details here: http://dev.mysql.com/doc/refman/5.7/en/load-data-local.html
   ```sql
-  LOAD DATA LOCAL INFILE '/path/to/csv/ACLED-Version-5-All-Africa-1997-2014_dyadic_Updated_no_notes.csv'
+  LOAD DATA LOCAL INFILE '/var/lib/mysql/ACLED-Version-5-All-Africa-1997-2014_dyadic_Updated_no_notes.csv'
   INTO TABLE Conflict
   CHARACTER SET latin1
   FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\'
@@ -97,11 +84,11 @@
   )
   SET EVENT_DATE=str_to_date(@EVENT_DATE, '%d/%m/%Y');
   ```
-  * Create test database: `CREATE DATABASE test;`
+* Stop and delete the `mysqldb` container
+  * If this step is not done, `docker-compose up` will fail due to a container already existing with the same name
 
-### Usage
-* Change the values in `dao/src/test/resources/test-app.properties`, `rest-services/src/main/resources/app.properties`, and `rest-services/src/test/resources/test-app.properties` to connect to your MySQL instance
-* Build the project with `mvn clean install` in the project's root directory
-* Change to the UI directory and start jetty with `mvn jetty:run`
+## Usage
+* Change directory to the top-level project directory (e.g. `acled-conflict-visualization`)
+* Start up the app and DB (if not already running): `docker-compose up`
+  * NOTE: Make sure the `volumes` section of `docker-compose.yml` matches where your mysql DB files are stored
 * Access the webapp at `localhost:8080`
-  * If running this in a VM, you can use port forwarding to access the UI from your host machine
