@@ -91,4 +91,5 @@
 * Change directory to the top-level project directory (e.g. `acled-conflict-visualization`)
 * Start up the app and DB (if not already running): `docker-compose up`
   * NOTE: Make sure the `volumes` section of `docker-compose.yml` matches where your mysql DB files are stored
+  * NOTE: Also make sure the `MYSQL_ROOT_PASSWORD` value matches what you used during setup
 * Access the webapp at `localhost:8080`
