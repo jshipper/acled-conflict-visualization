@@ -22,72 +22,10 @@ import javax.persistence.UniqueConstraint;
  *
  */
 @Entity
-@NamedQueries({
-  @NamedQuery(name = Conflict.ALL_QUERY,
-    query = "FROM " + Conflict.TABLE_NAME + " c "),
-  @NamedQuery(name = Conflict.BY_DATE_QUERY,
-    query = "FROM " + Conflict.TABLE_NAME + " c WHERE c.date = :date"),
-  @NamedQuery(name = Conflict.IN_DATE_RANGE_QUERY,
-    query = "FROM " + Conflict.TABLE_NAME
-      + " c WHERE (:startDate IS NULL OR c.date >= :startDate) "
-      + "AND (:endDate IS NULL OR c.date <= :endDate) "),
-  @NamedQuery(name = Conflict.BY_COUNTRY_QUERY,
-    query = "FROM " + Conflict.TABLE_NAME
-      + " c WHERE lower(c.country) = lower(:country)"),
-  @NamedQuery(name = Conflict.BY_ACTOR_QUERY,
-    query = "FROM " + Conflict.TABLE_NAME
-      + " c WHERE lower(c.actor1) = lower(:actor) OR lower(c.actor2) = lower(:actor)"),
-  @NamedQuery(name = Conflict.BY_ACTORS_QUERY,
-    query = "FROM " + Conflict.TABLE_NAME
-      + " c WHERE (lower(c.actor1) = lower(:actor1) OR lower(c.actor1) = lower(:actor2))"
-      + " AND (lower(c.actor2) = lower(:actor1) OR lower(c.actor2) = lower(:actor2))"),
-  @NamedQuery(name = Conflict.BY_FATALITIES_QUERY,
-    query = "FROM " + Conflict.TABLE_NAME
-      + " c WHERE c.fatalities = :fatalities"),
-  @NamedQuery(name = Conflict.IN_FATALITY_RANGE_QUERY,
-    query = "FROM " + Conflict.TABLE_NAME
-      + " c WHERE (:lowEnd IS NULL OR c.fatalities >= :lowEnd) "
-      + "AND (:highEnd IS NULL OR c.fatalities <= :highEnd)"),
-  @NamedQuery(name = Conflict.BY_CRITERIA_QUERY,
-    query = "FROM " + Conflict.TABLE_NAME
-      + " c WHERE (:startDate IS NULL OR c.date >= :startDate) "
-      + "AND (:endDate IS NULL OR c.date <= :endDate) "
-      + "AND (:country IS NULL OR lower(c.country) = lower(:country)) "
-      + "AND (:actor1 IS NULL OR lower(c.actor1) = lower(:actor1) OR lower(c.actor2) = lower(:actor1)) "
-      + "AND (:actor2 IS NULL OR lower(c.actor1) = lower(:actor2) OR lower(c.actor2) = lower(:actor2)) "
-      + "AND (:lowEnd IS NULL OR c.fatalities >= :lowEnd) "
-      + "AND (:highEnd IS NULL OR c.fatalities <= :highEnd) "),
-  @NamedQuery(name = Conflict.ALL_COUNTRIES_QUERY,
-    query = "SELECT DISTINCT c.country FROM " + Conflict.TABLE_NAME + " c"),
-  @NamedQuery(name = Conflict.ALL_ACTOR1S_QUERY,
-    query = "SELECT DISTINCT c.actor1 FROM " + Conflict.TABLE_NAME + " c"),
-  @NamedQuery(name = Conflict.ACTOR1S_BY_COUNTRY_QUERY,
-    query = "SELECT DISTINCT c.actor1 FROM " + Conflict.TABLE_NAME + " c "
-      + "WHERE lower(c.country) = lower(:country)"),
-  @NamedQuery(name = Conflict.ACTOR2S_BY_COUNTRY_QUERY,
-    query = "SELECT DISTINCT c.actor2 FROM " + Conflict.TABLE_NAME + " c "
-      + "WHERE lower(c.country) = lower(:country)"),
-  @NamedQuery(name = Conflict.ALL_ACTOR2S_QUERY,
-    query = "SELECT DISTINCT c.actor2 FROM " + Conflict.TABLE_NAME + " c") })
 @Table(name = Conflict.TABLE_NAME,
   uniqueConstraints = @UniqueConstraint(columnNames = { "EVENT_ID_NO_CNTY" }) )
 public class Conflict implements Serializable {
   public static final String TABLE_NAME = "Conflict";
-  public static final String ALL_QUERY = "getAllConflicts";
-  public static final String BY_DATE_QUERY = "getConflictsByDate";
-  public static final String IN_DATE_RANGE_QUERY = "getConflictsInDateRange";
-  public static final String BY_COUNTRY_QUERY = "getConflictsByCountry";
-  public static final String BY_ACTOR_QUERY = "getConflictsByActor";
-  public static final String BY_ACTORS_QUERY = "getConflictsByActors";
-  public static final String BY_FATALITIES_QUERY = "getConflictsByFatalities";
-  public static final String IN_FATALITY_RANGE_QUERY =
-    "getConflictsInFatalityRange";
-  public static final String BY_CRITERIA_QUERY = "getConflictsByCriteria";
-  public static final String ALL_COUNTRIES_QUERY = "getAllCountries";
-  public static final String ALL_ACTOR1S_QUERY = "getAllActor1s";
-  public static final String ALL_ACTOR2S_QUERY = "getAllActor2s";
-  public static final String ACTOR1S_BY_COUNTRY_QUERY = "getActor1sByCountry";
-  public static final String ACTOR2S_BY_COUNTRY_QUERY = "getActor2sByCountry";
   public static final String DATE_FORMAT = "yyyy-MM-dd";
   private static final long serialVersionUID = 6010815673597700212L;
 
